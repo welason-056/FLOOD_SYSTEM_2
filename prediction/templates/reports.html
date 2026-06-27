@@ -1,0 +1,740 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ... (same CSS as before - keep unchanged) ... */
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Reports
+{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+        PAGE HEADER
+========================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">
+            📊 Flood Reports
+        </h2>
+
+        <p class="page-subtitle">
+            Generate and analyze flood prediction reports from the AI Prediction Center.
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-lg-end">
+
+        <button class="btn btn-primary" id="refreshReports">
+            <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        STATISTICS CARDS
+========================================== -->
+
+<div class="row g-4 mb-4" id="statsContainer">
+
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card primary">
+            <h2 id="totalPredictions">0</h2>
+            <p>Total Predictions</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card danger">
+            <h2 id="totalAlerts">0</h2>
+            <p>Total Alerts</p>
+            <small style="color:rgba(255,255,255,0.7);">(All predictions)</small>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card warning">
+            <h2 id="highRiskCommunities">0</h2>
+            <p>High Risk Communities</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card success">
+            <h2 id="activeAlerts">0</h2>
+            <p>Active Alerts Today</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ==========================================
+        FILTERS
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+        <i class="fa-solid fa-sliders me-2"></i> Report Filters
+    </div>
+
+    <div class="card-body filter-row">
+
+        <div class="row align-items-end">
+
+            <div class="col-md-3 mb-2 mb-md-0">
+
+                <label class="form-label">Date From</label>
+
+                <input
+                    type="date"
+                    class="form-control"
+                    id="dateFrom"
+                    value="">
+
+            </div>
+
+            <div class="col-md-3 mb-2 mb-md-0">
+
+                <label class="form-label">Date To</label>
+
+                <input
+                    type="date"
+                    class="form-control"
+                    id="dateTo"
+                    value="">
+
+            </div>
+
+            <div class="col-md-2 mb-2 mb-md-0">
+
+                <label class="form-label">Risk Level</label>
+
+                <select class="form-select" id="riskFilter">
+
+                    <option value="">All Risks</option>
+                    <option value="HIGH">High</option>
+                    <option value="MODERATE">Moderate</option>
+                    <option value="LOW">Low</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <button class="btn btn-primary" id="applyFilters">
+                    <i class="fa-solid fa-file-lines"></i> Generate Report
+                </button>
+
+                <button class="btn btn-success" id="exportExcel">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel
+                </button>
+
+                <button class="btn btn-danger" id="exportPdf">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        REPORT SUMMARY TABLE
+========================================== -->
+
+<div class="card">
+
+    <div class="card-header">
+        <i class="fa-solid fa-table me-2"></i> Flood Report Summary
+        <span class="badge bg-primary ms-2" id="recordCount">0</span>
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover" id="reportTable">
+
+                <thead>
+                    <tr>
+                        <th>Community</th>
+                        <th>Predictions</th>
+                        <th>Alerts</th>
+                        <th>Risk</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportTableBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x d-block mb-2"></i>
+                            Loading reports...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        EMPTY STATE (shown when no data)
+========================================== -->
+
+<div id="emptyState" style="display:none;">
+
+    <div class="card mt-4">
+
+        <div class="card-body empty-state">
+
+            <i class="fa-solid fa-inbox"></i>
+
+            <h4>No Reports Available</h4>
+
+            <p>
+                No predictions have been generated yet.
+                <a href="{% url 'prediction' %}">Generate a prediction</a>
+                to see reports here.
+            </p>
+
+            <a href="{% url 'prediction' %}" class="btn btn-primary mt-3">
+                <i class="fa-solid fa-brain"></i> Go to Prediction Center
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL REPORTS JAVASCRIPT (API‑Driven)
+========================================================= -->
+{% block extra_js %}
+
+<script>
+    /*=========================================================
+        FLOODGUARD AI - REPORTS PAGE
+        Alerts = ALL predictions (matches Alerts Center)
+    =========================================================*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        console.log("Reports Module Loaded");
+
+        // DOM refs
+        const totalPredictions = document.getElementById('totalPredictions');
+        const totalAlerts = document.getElementById('totalAlerts');
+        const highRiskCommunities = document.getElementById('highRiskCommunities');
+        const activeAlerts = document.getElementById('activeAlerts');
+        const tableBody = document.getElementById('reportTableBody');
+        const recordCount = document.getElementById('recordCount');
+        const emptyState = document.getElementById('emptyState');
+        const refreshBtn = document.getElementById('refreshReports');
+
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const riskFilter = document.getElementById('riskFilter');
+        const applyBtn = document.getElementById('applyFilters');
+
+        // Store all predictions
+        let allPredictions = [];
+
+        // Today's date for default filters
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        // Default: show last 7 days
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        dateFrom.value = sevenDaysAgo.toISOString().split('T')[0];
+        dateTo.value = todayStr;
+
+        /*=========================================
+            FETCH PREDICTIONS FROM API
+        =========================================*/
+
+        function fetchPredictions() {
+
+            return fetch('/api/user-predictions/')
+                .then(response => response.json())
+                .then(data => {
+                    const raw = data.predictions || [];
+                    // Filter out placeholder/incomplete entries
+                    const valid = raw.filter(p => {
+                        return (p.rainfall_mm || p.rainfall || 0) > 0 ||
+                               (p.temperature_c || p.temperature || 0) > 0 ||
+                               (p.humidity_percent || p.humidity || 0) > 0 ||
+                               (p.soil_moisture || 0) > 0;
+                    });
+                    console.log(`✅ Loaded ${raw.length} total, ${valid.length} valid`);
+                    allPredictions = valid;
+                    return allPredictions;
+                })
+                .catch(error => {
+                    console.error('Error fetching predictions:', error);
+                    showToast('Failed to load reports. Please try again.', 'danger');
+                    return [];
+                });
+
+        }
+
+        /*=========================================
+            FILTER PREDICTIONS
+        =========================================*/
+
+        function filterPredictions() {
+
+            let filtered = [...allPredictions];
+
+            // Date filter
+            const from = dateFrom.value;
+            const to = dateTo.value;
+
+            if (from) {
+                filtered = filtered.filter(p => {
+                    if (!p.date) return false;
+                    const predDate = p.date.split('T')[0];
+                    return predDate >= from;
+                });
+            }
+
+            if (to) {
+                filtered = filtered.filter(p => {
+                    if (!p.date) return false;
+                    const predDate = p.date.split('T')[0];
+                    return predDate <= to;
+                });
+            }
+
+            // Risk filter
+            const risk = riskFilter.value;
+            if (risk) {
+                filtered = filtered.filter(p => p.risk_level === risk);
+            }
+
+            console.log(`Filtered: ${filtered.length} predictions`);
+            return filtered;
+
+        }
+
+        /*=========================================
+            GENERATE COMMUNITY SUMMARY
+        =========================================*/
+
+        function generateCommunitySummary(filtered) {
+
+            const communityMap = {};
+
+            filtered.forEach(p => {
+                const community = p.community;
+                if (!communityMap[community]) {
+                    communityMap[community] = {
+                        community: community,
+                        predictions: 0,
+                        alerts: 0,
+                        risk: 'LOW'
+                    };
+                }
+                communityMap[community].predictions += 1;
+                // COUNT ALL PREDICTIONS AS ALERTS (matches Alerts Center)
+                communityMap[community].alerts += 1;
+                // Determine highest risk level
+                if (p.risk_level === 'HIGH') {
+                    communityMap[community].risk = 'HIGH';
+                } else if (p.risk_level === 'MODERATE' && communityMap[community].risk !== 'HIGH') {
+                    communityMap[community].risk = 'MODERATE';
+                }
+            });
+
+            return Object.values(communityMap);
+
+        }
+
+        /*=========================================
+            UPDATE STATISTICS
+        =========================================*/
+
+        function updateStats(filtered) {
+
+            const total = filtered.length;
+            // COUNT ALL PREDICTIONS AS ALERTS (matches Alerts Center)
+            const alerts = filtered.length;
+
+            // High risk communities (distinct)
+            const highRiskComm = new Set();
+            filtered.forEach(p => {
+                if (p.risk_level === 'HIGH') {
+                    highRiskComm.add(p.community);
+                }
+            });
+
+            // Active alerts today (ALL today's predictions)
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayPreds = filtered.filter(p => {
+                if (!p.date) return false;
+                return p.date.split('T')[0] === todayStr;
+            });
+
+            totalPredictions.textContent = total;
+            totalAlerts.textContent = alerts;
+            highRiskCommunities.textContent = highRiskComm.size;
+            activeAlerts.textContent = todayPreds.length;
+
+            // Animate counters
+            animateCounters();
+
+        }
+
+        /*=========================================
+            RENDER TABLE
+        =========================================*/
+
+        function renderTable(filtered) {
+
+            const summary = generateCommunitySummary(filtered);
+
+            if (summary.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
+                            No reports match the current filters.
+                        </td>
+                    </tr>
+                `;
+                recordCount.textContent = '0';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            recordCount.textContent = summary.length;
+
+            let html = '';
+            summary.forEach(item => {
+                const riskClass = item.risk === 'HIGH' ? 'danger' :
+                                  item.risk === 'MODERATE' ? 'warning' : 'success';
+                const riskLabel = item.risk === 'HIGH' ? 'High' :
+                                  item.risk === 'MODERATE' ? 'Medium' : 'Low';
+                const alertBadge = item.alerts > 0 ? 'bg-danger' : 'bg-success';
+                const alertText = item.alerts > 0 ? item.alerts : '0';
+
+                html += `
+                    <tr>
+                        <td><strong>${item.community}</strong></td>
+                        <td>${item.predictions}</td>
+                        <td><span class="badge ${alertBadge}">${alertText}</span></td>
+                        <td><span class="badge bg-${riskClass}">${riskLabel}</span></td>
+                        <td>
+                            <a href="/history/?community=${encodeURIComponent(item.community)}" class="btn btn-sm btn-primary">
+                                <i class="fa-solid fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+
+        }
+
+        /*=========================================
+            ANIMATE COUNTERS
+        =========================================*/
+
+        function animateCounters() {
+            document.querySelectorAll('.stat-card h2').forEach(counter => {
+                const target = parseInt(counter.textContent);
+                if (!target) return;
+                let current = 0;
+                const step = Math.ceil(target / 40);
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) { current = target; clearInterval(timer); }
+                    counter.textContent = current;
+                }, 30);
+            });
+        }
+
+        /*=========================================
+            REFRESH / LOAD DATA
+        =========================================*/
+
+        function loadReports() {
+
+            const btn = refreshBtn;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x d-block mb-2"></i>
+                        Loading reports...
+                    </td>
+                </tr>
+            `;
+
+            fetchPredictions()
+                .then(() => {
+                    const filtered = filterPredictions();
+                    updateStats(filtered);
+                    renderTable(filtered);
+                    showToast('Reports refreshed successfully.', 'success');
+                })
+                .catch(err => {
+                    console.error('Load error:', err);
+                    showToast('Failed to load reports.', 'danger');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh';
+                });
+
+        }
+
+        /*=========================================
+            EXPORT FUNCTIONS (Working)
+        =========================================*/
+
+        // --- Export to Excel (CSV) ---
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            // Get the currently filtered data (same as table)
+            const filtered = filterPredictions();
+            const summary = generateCommunitySummary(filtered);
+
+            if (summary.length === 0) {
+                showToast('No data to export.', 'warning');
+                return;
+            }
+
+            // Build CSV content
+            let csv = 'Community,Predictions,Alerts,Risk\n';
+            summary.forEach(item => {
+                csv += `"${item.community}",${item.predictions},${item.alerts},"${item.risk}"\n`;
+            });
+
+            // Create download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `flood_report_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast('Excel (CSV) exported successfully.', 'success');
+        });
+
+        // --- Export to PDF (using window.print) ---
+        document.getElementById('exportPdf').addEventListener('click', function() {
+            const filtered = filterPredictions();
+            const summary = generateCommunitySummary(filtered);
+
+            if (summary.length === 0) {
+                showToast('No data to export.', 'warning');
+                return;
+            }
+
+            // Build a printable HTML string
+            const todayStr = new Date().toISOString().split('T')[0];
+            let tableRows = '';
+            summary.forEach(item => {
+                const riskLabel = item.risk === 'HIGH' ? 'High' :
+                                  item.risk === 'MODERATE' ? 'Medium' : 'Low';
+                const riskColor = item.risk === 'HIGH' ? '#D32F2F' :
+                                  item.risk === 'MODERATE' ? '#F9A825' : '#2E7D32';
+                tableRows += `
+                    <tr>
+                        <td><strong>${item.community}</strong></td>
+                        <td>${item.predictions}</td>
+                        <td>${item.alerts}</td>
+                        <td><span style="background:${riskColor};color:#fff;padding:4px 10px;border-radius:30px;font-size:12px;">${riskLabel}</span></td>
+                    </tr>
+                `;
+            });
+
+            const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>Flood Report - ${todayStr}</title>
+                <style>
+                    body { font-family: 'Poppins', sans-serif; padding: 30px; }
+                    h1 { color: #1E293B; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th { background: #1565C0; color: #fff; padding: 12px; text-align: left; }
+                    td { padding: 10px; border-bottom: 1px solid #e9ecef; }
+                    .footer { margin-top: 30px; color: #6c757d; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <h1>📊 Flood Report - ${todayStr}</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Community</th>
+                            <th>Predictions</th>
+                            <th>Alerts</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+                <div class="footer">
+                    Generated from FloodGuard AI Prediction Center
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 1000);
+                    }
+                <\/script>
+            </body>
+            </html>
+            `;
+
+            const printWindow = window.open('', '_blank', 'width=1000,height=800');
+            if (!printWindow) {
+                showToast('Please allow popups for PDF export.', 'warning');
+                return;
+            }
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        });
+
+        /*=========================================
+            TOAST SYSTEM
+        =========================================*/
+
+        function showToast(message, type) {
+
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-check-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle',
+                danger: 'fa-times-circle'
+            };
+
+            toast.className = 'toast-notification ' + type;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+
+        }
+
+        /*=========================================
+            RIPPLE EFFECT
+        =========================================*/
+
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = size + 'px';
+                ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        /*=========================================
+            EVENT LISTENERS
+        =========================================*/
+
+        refreshBtn.addEventListener('click', loadReports);
+        applyBtn.addEventListener('click', function() {
+            const filtered = filterPredictions();
+            updateStats(filtered);
+            renderTable(filtered);
+            showToast('Report generated with current filters.', 'success');
+        });
+
+        // Allow Enter key on date inputs to trigger filter
+        document.querySelectorAll('#dateFrom, #dateTo, #riskFilter').forEach(el => {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    applyBtn.click();
+                }
+            });
+        });
+
+        /*=========================================
+            INIT
+        =========================================*/
+
+        // Load initial data
+        fetchPredictions()
+            .then(() => {
+                const filtered = filterPredictions();
+                updateStats(filtered);
+                renderTable(filtered);
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.add('fade-up');
+                });
+            })
+            .catch(err => console.error('Initial load error:', err));
+
+        // Auto-refresh every 60 seconds
+        setInterval(() => {
+            fetchPredictions()
+                .then(() => {
+                    const filtered = filterPredictions();
+                    updateStats(filtered);
+                    renderTable(filtered);
+                })
+                .catch(err => console.error('Auto-refresh error:', err));
+        }, 60000);
+
+        console.log('FloodGuard AI Reports Module Ready');
+
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,871 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}History{% endblock %}
+
+{% block extra_css %}
+<style>
+    /*=========================================================
+        HISTORY PAGE STYLES
+    =========================================================*/
+    :root{
+        --primary:#1565C0;
+        --primary-dark:#0D47A1;
+        --primary-light:#42A5F5;
+        --success:#2E7D32;
+        --warning:#F9A825;
+        --danger:#D32F2F;
+        --light:#F5F9FF;
+        --white:#FFFFFF;
+        --dark:#1E293B;
+        --gray:#6B7280;
+        --radius:18px;
+        --shadow:0 10px 30px rgba(0,0,0,.08);
+        --transition:.3s ease;
+    }
+
+    body{
+        background:var(--light);
+        font-family:'Poppins',sans-serif;
+    }
+
+    .page-title{
+        font-size:32px;
+        font-weight:700;
+        color:var(--dark);
+    }
+
+    .page-subtitle{
+        color:var(--gray);
+        font-size:16px;
+    }
+
+    .card{
+        border:none;
+        border-radius:20px;
+        overflow:hidden;
+        box-shadow:var(--shadow);
+        transition:var(--transition);
+    }
+
+    .card:hover{
+        transform:translateY(-5px);
+        box-shadow:0 20px 40px rgba(0,0,0,.12);
+    }
+
+    .card-header{
+        background:#fff;
+        border-bottom:1px solid #edf2f7;
+        padding:18px 22px;
+        font-weight:600;
+    }
+
+    .card-body{
+        padding:25px;
+    }
+
+    .form-label{
+        font-weight:600;
+        color:#374151;
+    }
+
+    .form-control, .form-select{
+        border-radius:12px;
+        border:1px solid #dbe4ef;
+        padding:12px 15px;
+        transition:var(--transition);
+        background:#fafcff;
+    }
+
+    .form-control:focus, .form-select:focus{
+        border-color:var(--primary);
+        box-shadow:0 0 0 .2rem rgba(21,101,192,.15);
+    }
+
+    .btn{
+        border-radius:12px;
+        font-weight:600;
+        transition:var(--transition);
+        position:relative;
+        overflow:hidden;
+    }
+
+    .btn:hover{
+        transform:translateY(-2px);
+    }
+
+    .btn-primary{
+        background:var(--primary);
+        border:none;
+    }
+
+    .btn-primary:hover{
+        background:var(--primary-dark);
+    }
+
+    .btn-secondary{
+        background:#6c757d;
+        border:none;
+    }
+
+    .btn-secondary:hover{
+        background:#5a6268;
+    }
+
+    .btn-sm{
+        padding:5px 12px;
+        font-size:13px;
+    }
+
+    .table{
+        border-radius:15px;
+        overflow:hidden;
+        vertical-align:middle;
+    }
+
+    .table thead{
+        background:#1565C0;
+        color:#fff;
+    }
+
+    .table thead th{
+        border:none;
+        padding:16px;
+        font-weight:600;
+    }
+
+    .table tbody td{
+        padding:15px;
+        border-bottom:1px solid #edf2f7;
+    }
+
+    .table tbody tr{
+        transition:var(--transition);
+    }
+
+    .table tbody tr:hover{
+        background:#f5f9ff;
+    }
+
+    .badge{
+        border-radius:30px;
+        padding:8px 14px;
+        font-size:12px;
+        font-weight:600;
+    }
+
+    .badge.bg-danger{ background:#D32F2F !important; }
+    .badge.bg-warning{ background:#F9A825 !important; color:#333; }
+    .badge.bg-success{ background:#2E7D32 !important; }
+
+    .empty-state{
+        text-align:center;
+        padding:60px 20px;
+    }
+
+    .empty-state i{
+        font-size:64px;
+        color:#cbd5e1;
+        margin-bottom:20px;
+    }
+
+    .empty-state h4{
+        font-weight:700;
+        color:var(--dark);
+    }
+
+    .empty-state p{
+        color:#6c757d;
+    }
+
+    .fade-up{
+        animation:fadeUp .8s ease;
+    }
+
+    @keyframes fadeUp{
+        from{ opacity:0; transform:translateY(25px); }
+        to{ opacity:1; transform:translateY(0); }
+    }
+
+    .modal-content{
+        border:none;
+        border-radius:20px;
+    }
+
+    .modal-header{
+        border-bottom:1px solid #edf2f7;
+        padding:20px 25px;
+    }
+
+    .modal-body{
+        padding:25px;
+    }
+
+    .modal-footer{
+        border-top:1px solid #edf2f7;
+        padding:20px 25px;
+    }
+
+    .detail-item{
+        display:flex;
+        justify-content:space-between;
+        padding:10px 0;
+        border-bottom:1px solid #edf2f7;
+    }
+
+    .detail-item:last-child{
+        border-bottom:none;
+    }
+
+    .detail-item .label{
+        color:#6c757d;
+        font-weight:500;
+    }
+
+    .detail-item .value{
+        font-weight:600;
+        color:var(--dark);
+    }
+
+    .filter-row{
+        background:#f8fafc;
+        border-radius:15px;
+        padding:20px;
+    }
+
+    @media(max-width:992px){
+        .filter-row .btn{ margin-top:10px; width:100%; }
+    }
+
+    @media(max-width:768px){
+        .page-title{ font-size:26px; }
+        .card-body{ padding:20px; }
+    }
+
+    @media(max-width:576px){
+        .page-title{ font-size:22px; }
+        .btn{ width:100%; margin-bottom:8px; }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+History
+{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+        PAGE HEADER
+========================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">
+            📜 Prediction & Alert History
+        </h2>
+
+        <p class="page-subtitle">
+            View historical flood predictions from the Prediction Center.
+            Data is fetched live from the Prediction and Alerts Center.
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-lg-end">
+
+        <button class="btn btn-secondary" id="clearFilters">
+            <i class="fa-solid fa-eraser"></i> Clear Filters
+        </button>
+
+        <button class="btn btn-primary" id="refreshHistory">
+            <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        FILTERS
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+        <i class="fa-solid fa-sliders me-2"></i> Filter History
+    </div>
+
+    <div class="card-body filter-row">
+
+        <div class="row align-items-end">
+
+            <div class="col-md-3 mb-2 mb-md-0">
+
+                <label class="form-label">Community</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="communityFilter"
+                    placeholder="Search Community">
+
+            </div>
+
+            <div class="col-md-3 mb-2 mb-md-0">
+
+                <label class="form-label">Date From</label>
+
+                <input
+                    type="date"
+                    class="form-control"
+                    id="dateFrom">
+
+            </div>
+
+            <div class="col-md-3 mb-2 mb-md-0">
+
+                <label class="form-label">Date To</label>
+
+                <input
+                    type="date"
+                    class="form-control"
+                    id="dateTo">
+
+            </div>
+
+            <div class="col-md-2 mb-2 mb-md-0">
+
+                <label class="form-label">Risk Level</label>
+
+                <select class="form-select" id="riskFilter">
+
+                    <option value="">All Risks</option>
+                    <option value="HIGH">High</option>
+                    <option value="MODERATE">Moderate</option>
+                    <option value="LOW">Low</option>
+
+                </select>
+
+            </div>
+
+            <div class="col-md-1">
+
+                <button class="btn btn-primary w-100" id="applyFilters">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        HISTORY TABLE
+========================================== -->
+
+<div class="card">
+
+    <div class="card-header">
+        <i class="fa-solid fa-clock-rotate-left me-2"></i> History Records
+        <span class="badge bg-primary ms-2" id="recordCount">0</span>
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover" id="historyTable">
+
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Community</th>
+                        <th>Date</th>
+                        <th>Risk Level</th>
+                        <th>Rainfall</th>
+                        <th>Alert Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x d-block mb-2"></i>
+                            Loading history...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        EMPTY STATE (shown when no data)
+========================================== -->
+
+<div id="emptyState" style="display:none;">
+
+    <div class="card mt-4">
+
+        <div class="card-body empty-state">
+
+            <i class="fa-solid fa-inbox"></i>
+
+            <h4>No History Records Found</h4>
+
+            <p>
+                No predictions match the current filters.
+                <button class="btn btn-link" id="clearFiltersLink">Clear filters</button>
+                or
+                <a href="{% url 'prediction' %}">generate predictions</a>.
+            </p>
+
+            <a href="{% url 'prediction' %}" class="btn btn-primary mt-3">
+                <i class="fa-solid fa-brain"></i> Go to Prediction Center
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        DETAILS MODAL
+========================================== -->
+
+<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-circle-info me-2"></i> Prediction Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Filled by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       JAVASCRIPT – API‑Driven History
+========================================================= -->
+{% block extra_js %}
+
+<script>
+    /*=========================================================
+        HISTORY PAGE
+        Fetches data from the same API as Prediction/Alerts Center.
+    =========================================================*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        console.log("History Module Loaded");
+
+        // DOM refs
+        const tableBody = document.getElementById('historyTableBody');
+        const recordCount = document.getElementById('recordCount');
+        const emptyState = document.getElementById('emptyState');
+
+        const communityFilter = document.getElementById('communityFilter');
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const riskFilter = document.getElementById('riskFilter');
+        const applyBtn = document.getElementById('applyFilters');
+        const refreshBtn = document.getElementById('refreshHistory');
+        const clearBtn = document.getElementById('clearFilters');
+        const clearLink = document.getElementById('clearFiltersLink');
+
+        let allPredictions = [];
+
+        // Today's date for default filters
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        dateFrom.value = sevenDaysAgo.toISOString().split('T')[0];
+        dateTo.value = todayStr;
+
+        /*=========================================
+            FETCH PREDICTIONS FROM API
+        =========================================*/
+
+        function fetchPredictions() {
+
+            return fetch('/api/user-predictions/')
+                .then(response => response.json())
+                .then(data => {
+                    const raw = data.predictions || [];
+                    // Keep all valid predictions
+                    const valid = raw.filter(p => {
+                        return p.community && p.date &&
+                               ((p.rainfall_mm || p.rainfall || 0) > 0 ||
+                                (p.temperature_c || p.temperature || 0) > 0 ||
+                                (p.humidity_percent || p.humidity || 0) > 0 ||
+                                (p.soil_moisture || 0) > 0);
+                    });
+                    console.log(`✅ Loaded ${raw.length} total, ${valid.length} valid`);
+                    allPredictions = valid;
+                    return allPredictions;
+                })
+                .catch(error => {
+                    console.error('Error fetching predictions:', error);
+                    showToast('Failed to load history. Please try again.', 'danger');
+                    return [];
+                });
+
+        }
+
+        /*=========================================
+            FILTER PREDICTIONS
+        =========================================*/
+
+        function filterPredictions() {
+
+            let filtered = [...allPredictions];
+
+            // Community filter
+            const community = communityFilter.value.trim().toLowerCase();
+            if (community) {
+                filtered = filtered.filter(p => p.community.toLowerCase().includes(community));
+            }
+
+            // Date range
+            const from = dateFrom.value;
+            const to = dateTo.value;
+
+            if (from) {
+                filtered = filtered.filter(p => {
+                    if (!p.date) return false;
+                    return p.date.split('T')[0] >= from;
+                });
+            }
+
+            if (to) {
+                filtered = filtered.filter(p => {
+                    if (!p.date) return false;
+                    return p.date.split('T')[0] <= to;
+                });
+            }
+
+            // Risk filter
+            const risk = riskFilter.value;
+            if (risk) {
+                filtered = filtered.filter(p => p.risk_level === risk);
+            }
+
+            // Sort by date descending (newest first)
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            console.log(`Filtered: ${filtered.length} predictions`);
+            return filtered;
+
+        }
+
+        /*=========================================
+            RENDER TABLE
+        =========================================*/
+
+        function renderTable(filtered) {
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
+                            No history records match the current filters.
+                        </td>
+                    </tr>
+                `;
+                recordCount.textContent = '0';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            recordCount.textContent = filtered.length;
+
+            let html = '';
+            filtered.forEach((p, index) => {
+                const riskClass = p.risk_level === 'HIGH' ? 'danger' :
+                                  p.risk_level === 'MODERATE' ? 'warning' : 'success';
+                const riskLabel = p.risk_level || 'N/A';
+                const statusClass = p.flood_risk ? 'danger' : 'success';
+                const statusText = p.flood_risk ? 'Active' : 'Safe';
+
+                const dateObj = new Date(p.date);
+                const dateStr = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const rainfall = p.rainfall_mm || p.rainfall || 0;
+
+                html += `
+                    <tr data-id="${p.id}">
+                        <td>${index + 1}</td>
+                        <td><strong>${p.community}</strong></td>
+                        <td>${dateStr}</td>
+                        <td>
+                            <span class="badge bg-${riskClass}">${riskLabel}</span>
+                        </td>
+                        <td>${rainfall} mm</td>
+                        <td>
+                            <span class="badge bg-${statusClass}">${statusText}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary view-btn" data-id="${p.id}">
+                                <i class="fa-solid fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+
+            // Attach view button events
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const pred = allPredictions.find(p => p.id == id);
+                    if (pred) {
+                        showDetails(pred);
+                    } else {
+                        alert('Prediction not found.');
+                    }
+                });
+            });
+
+        }
+
+        /*=========================================
+            SHOW DETAILS MODAL
+        =========================================*/
+
+        function showDetails(pred) {
+            const modalBody = document.getElementById('modalBody');
+            const dateObj = new Date(pred.date);
+            const dateStr = dateObj.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const riskClass = pred.risk_level === 'HIGH' ? 'danger' :
+                              pred.risk_level === 'MODERATE' ? 'warning' : 'success';
+            const statusClass = pred.flood_risk ? 'danger' : 'success';
+            const statusText = pred.flood_risk ? 'Active Alert' : 'Safe';
+
+            modalBody.innerHTML = `
+                <div class="detail-item">
+                    <span class="label">Community</span>
+                    <span class="value"><strong>${pred.community}</strong></span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Date</span>
+                    <span class="value">${dateStr}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Risk Level</span>
+                    <span class="value"><span class="badge bg-${riskClass}">${pred.risk_level}</span></span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Rainfall</span>
+                    <span class="value">${pred.rainfall_mm || pred.rainfall || 0} mm</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Temperature</span>
+                    <span class="value">${pred.temperature_c || pred.temperature || 0} °C</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Humidity</span>
+                    <span class="value">${pred.humidity_percent || pred.humidity || 0}%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Soil Moisture</span>
+                    <span class="value">${pred.soil_moisture || 0}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Confidence</span>
+                    <span class="value">${pred.confidence || pred.confidence_percent || 0}%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Alert Status</span>
+                    <span class="value"><span class="badge bg-${statusClass}">${statusText}</span></span>
+                </div>
+            `;
+
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+        }
+
+        /*=========================================
+            LOAD DATA
+        =========================================*/
+
+        function loadHistory() {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x d-block mb-2"></i>
+                        Loading history...
+                    </td>
+                </tr>
+            `;
+            emptyState.style.display = 'none';
+
+            fetchPredictions()
+                .then(() => {
+                    const filtered = filterPredictions();
+                    renderTable(filtered);
+                })
+                .catch(err => {
+                    console.error('Load error:', err);
+                    showToast('Failed to load history.', 'danger');
+                });
+        }
+
+        /*=========================================
+            CLEAR FILTERS
+        =========================================*/
+
+        function clearAllFilters() {
+            communityFilter.value = '';
+            dateFrom.value = '';
+            dateTo.value = '';
+            riskFilter.value = '';
+            const filtered = filterPredictions();
+            renderTable(filtered);
+            showToast('Filters cleared.', 'info');
+        }
+
+        /*=========================================
+            TOAST SYSTEM
+        =========================================*/
+
+        function showToast(message, type) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            const icons = {
+                success: 'fa-check-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle',
+                danger: 'fa-times-circle'
+            };
+            const colors = {
+                success: '#2E7D32',
+                warning: '#F57F17',
+                info: '#1565C0',
+                danger: '#C62828'
+            };
+            toast.style.cssText = `
+                position:fixed; right:20px; top:20px; z-index:9999;
+                min-width:300px; border-radius:15px; padding:18px 22px;
+                box-shadow:0 15px 35px rgba(0,0,0,.15);
+                animation:slideInRight .5s ease;
+                background:${colors[type] || '#1565C0'};
+                color:white;
+                font-weight:500;
+            `;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        /*=========================================
+            RIPPLE EFFECT
+        =========================================*/
+
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = size + 'px';
+                ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        /*=========================================
+            EVENT LISTENERS
+        =========================================*/
+
+        refreshBtn.addEventListener('click', loadHistory);
+        applyBtn.addEventListener('click', function() {
+            const filtered = filterPredictions();
+            renderTable(filtered);
+            showToast('Filters applied.', 'success');
+        });
+        clearBtn.addEventListener('click', clearAllFilters);
+        if (clearLink) clearLink.addEventListener('click', clearAllFilters);
+
+        // Enter key triggers filter
+        document.querySelectorAll('#communityFilter, #dateFrom, #dateTo, #riskFilter').forEach(el => {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    applyBtn.click();
+                }
+            });
+        });
+
+        /*=========================================
+            INIT
+        =========================================*/
+
+        loadHistory();
+
+        // Auto-refresh every 60 seconds
+        setInterval(() => {
+            fetchPredictions()
+                .then(() => {
+                    const filtered = filterPredictions();
+                    renderTable(filtered);
+                })
+                .catch(err => console.error('Auto-refresh error:', err));
+        }, 60000);
+
+        // Animate cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.classList.add('fade-up');
+        });
+
+        console.log('FloodGuard AI History Module Ready (API‑driven)');
+
+    });
+</script>
+
+{% endblock %}

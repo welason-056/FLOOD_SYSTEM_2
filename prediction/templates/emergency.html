@@ -1,0 +1,1732 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Emergency Response{% endblock %}
+
+<!-- =========================================================
+       ALL EMERGENCY CSS EMBEDDED HERE
+========================================================= -->
+{% block extra_css %}
+<style>
+    /*=========================================================
+        FLOODGUARD AI - EMERGENCY PAGE
+    =========================================================*/
+
+    :root {
+        --emergency-red: linear-gradient(135deg, #dc2626, #b91c1c, #991b1b);
+        --warning-orange: linear-gradient(135deg, #ea580c, #c2410c);
+        --info-blue: linear-gradient(135deg, #2563eb, #1d4ed8);
+        --success-green: linear-gradient(135deg, #16a34a, #15803d);
+    }
+
+    /*=========================================================
+        PAGE HEADER
+    =========================================================*/
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    /*=========================================================
+        CARDS
+    =========================================================*/
+
+    .card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+    }
+
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, .12);
+    }
+
+    .card-header {
+        background: #fff;
+        border-bottom: 1px solid #edf2f7;
+        padding: 18px 22px;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    /*=========================================================
+        STATISTICS
+    =========================================================*/
+
+    .stat-card {
+        position: relative;
+        padding: 25px;
+        color: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .stat-card h2 {
+        color: #fff;
+        font-size: 34px;
+        font-weight: 700;
+    }
+
+    .stat-card p {
+        color: rgba(255, 255, 255, .9);
+        margin-top: 8px;
+    }
+
+    .stat-card i {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        font-size: 48px;
+        opacity: .2;
+    }
+
+    .primary {
+        background: linear-gradient(135deg, #1565C0, #42A5F5);
+    }
+    .success {
+        background: linear-gradient(135deg, #2E7D32, #66BB6A);
+    }
+    .warning {
+        background: linear-gradient(135deg, #F9A825, #FFD54F);
+    }
+    .danger {
+        background: linear-gradient(135deg, #D32F2F, #EF5350);
+    }
+
+    /*=========================================================
+        SOS BUTTON
+    =========================================================*/
+
+    #sosButton {
+        font-size: 18px;
+        font-weight: 700;
+        padding: 14px 28px;
+        border-radius: 15px;
+        animation: pulse 2s infinite;
+        border: none;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(211, 47, 47, .4);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(211, 47, 47, .5);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(211, 47, 47, 0);
+        }
+    }
+
+    /*=========================================================
+        EMERGENCY CARDS
+    =========================================================*/
+
+    .emergency-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        border: 1px solid #edf2f7;
+        height: 100%;
+    }
+
+    .emergency-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+    }
+
+    .emergency-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .emergency-card.call::before {
+        background: var(--emergency-red);
+    }
+    .emergency-card.evacuation::before {
+        background: var(--info-blue);
+    }
+    .emergency-card.alerts::before {
+        background: var(--warning-orange);
+    }
+
+    .emergency-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 32px;
+        transition: all 0.3s;
+    }
+
+    .emergency-card.call .emergency-icon {
+        background: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
+    }
+    .emergency-card.evacuation .emergency-icon {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+    }
+    .emergency-card.alerts .emergency-icon {
+        background: rgba(234, 88, 12, 0.1);
+        color: #ea580c;
+    }
+
+    .emergency-card:hover .emergency-icon {
+        transform: scale(1.1);
+    }
+
+    .emergency-card h3 {
+        color: var(--dark);
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .emergency-card p {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .btn-emergency-call {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        animation: callPulse 2s infinite;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        display: inline-block;
+        width: 100%;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-emergency-call:hover {
+        animation: none;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);
+    }
+
+    @keyframes callPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 20px rgba(220, 38, 38, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+        }
+    }
+
+    /*=========================================================
+        CONTACT CARDS
+    =========================================================*/
+
+    .contact-card {
+        background: #f8fbff;
+        border: 1px solid #e6eef7;
+        border-radius: 18px;
+        padding: 20px;
+        transition: var(--transition);
+        text-align: center;
+        height: 100%;
+    }
+
+    .contact-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, .08);
+    }
+
+    .contact-card h5 {
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .contact-card p {
+        color: #6c757d;
+        margin: 15px 0;
+    }
+
+    /*=========================================================
+        EVACUATION CENTER ITEMS
+    =========================================================*/
+
+    .evacuation-center-item {
+        padding: 1rem;
+        border-left: 4px solid #22c55e;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        background: #f8faff;
+        border: 1px solid #edf2f7;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .evacuation-center-item:hover {
+        transform: translateX(5px);
+        border-left-color: var(--primary) !important;
+        background: #f0f5ff;
+    }
+
+    .evacuation-center-item.limited {
+        border-left-color: #eab308;
+    }
+
+    .evacuation-center-item h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: var(--dark);
+    }
+
+    .evacuation-center-item p {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    /*=========================================================
+        MODALS
+    =========================================================*/
+
+    .call-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .call-modal.show {
+        display: flex;
+    }
+
+    .call-container {
+        background: #fff;
+        border-radius: 2rem;
+        padding: 2rem;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        border: 1px solid #dc2626;
+        animation: slideInUp 0.4s ease-out;
+    }
+
+    .call-animation {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        animation: callPulse 1.5s infinite;
+    }
+
+    .call-animation i {
+        font-size: 48px;
+        color: white;
+        animation: ring 1.5s infinite;
+    }
+
+    @keyframes ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(15deg);
+        }
+        50% {
+            transform: rotate(-15deg);
+        }
+        75% {
+            transform: rotate(5deg);
+        }
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    .call-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin: 1rem 0;
+        letter-spacing: 2px;
+    }
+
+    .call-status {
+        font-size: 0.875rem;
+        color: #16a34a;
+        margin-bottom: 1.5rem;
+    }
+
+    .call-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .call-btn {
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+        border: none;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .call-now-btn {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+    }
+
+    .call-now-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(220, 38, 38, 0.5);
+    }
+
+    .cancel-btn {
+        background: #f1f3f5;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+    }
+
+    .cancel-btn:hover {
+        background: #e9ecef;
+    }
+
+    /* Evacuation Modal */
+    .evacuation-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1500;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .evacuation-modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #fff;
+        border-radius: 1.5rem;
+        border: 1px solid #edf2f7;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        animation: slideInUp 0.4s ease-out;
+    }
+
+    .modal-content h2 {
+        color: var(--dark);
+        font-size: 1.5rem;
+    }
+
+    .modal-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 1.5rem 0 1.5rem;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: #6c757d;
+        transition: var(--transition);
+    }
+
+    .modal-close-btn:hover {
+        color: var(--dark);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+
+    /*=========================================================
+        SAFETY INSTRUCTIONS
+    =========================================================*/
+
+    .safety-card {
+        background: #f8faff;
+        border: 1px solid #edf2f7;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .safety-card h4 {
+        color: var(--dark);
+        font-weight: 600;
+    }
+
+    .safety-card ul {
+        padding-left: 20px;
+        color: #495057;
+        line-height: 1.8;
+    }
+
+    .safety-card ul li {
+        margin-bottom: 0.5rem;
+    }
+
+    /*=========================================================
+        RISK ALERT BAR
+    =========================================================*/
+
+    .risk-alert-bar {
+        background: linear-gradient(135deg, #7f1d1d, #991b1b);
+        border-radius: 12px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    .risk-alert-text {
+        color: #fecaca;
+        font-size: 14px;
+    }
+
+    .risk-alert-text i {
+        margin-right: 8px;
+    }
+
+    .risk-emergency-btn {
+        background: white;
+        color: #dc2626;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .risk-emergency-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /*=========================================================
+        FLOATING ACTION BUTTON
+    =========================================================*/
+
+    .fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);
+        transition: all 0.3s;
+        z-index: 999;
+        animation: callPulse 2s infinite;
+        border: none;
+        font-size: 24px;
+    }
+
+    .fab:hover {
+        transform: scale(1.1);
+        animation: none;
+    }
+
+    /*=========================================================
+        TOAST NOTIFICATION
+    =========================================================*/
+
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 3000;
+        padding: 1rem 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        font-weight: 500;
+        color: white;
+        animation: slideInRight 0.4s ease-out;
+        max-width: 400px;
+    }
+
+    .toast-notification.success {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+    }
+    .toast-notification.warning {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    .toast-notification.info {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /*=========================================================
+        ANIMATIONS
+    =========================================================*/
+
+    .fade-up {
+        animation: fadeUp .7s ease;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animation-delay-1 {
+        animation-delay: 0.1s;
+    }
+    .animation-delay-2 {
+        animation-delay: 0.2s;
+    }
+    .animation-delay-3 {
+        animation-delay: 0.3s;
+    }
+    .animation-delay-4 {
+        animation-delay: 0.4s;
+    }
+
+    /*=========================================================
+        RESPONSIVE
+    =========================================================*/
+
+    @media(max-width: 992px) {
+        .card {
+            margin-bottom: 20px;
+        }
+        #sosButton {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .text-end {
+            text-align: left !important;
+        }
+    }
+
+    @media(max-width: 768px) {
+        .page-title {
+            font-size: 24px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .emergency-card {
+            padding: 1.5rem;
+        }
+        .call-container {
+            padding: 1.5rem;
+        }
+        .call-number {
+            font-size: 1.5rem;
+        }
+        .fab {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            bottom: 20px;
+            right: 20px;
+        }
+    }
+
+    @media(max-width: 576px) {
+        .page-title {
+            font-size: 22px;
+        }
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .emergency-card {
+            padding: 1rem;
+        }
+        .stat-card h2 {
+            font-size: 28px;
+        }
+        .call-buttons {
+            flex-direction: column;
+        }
+        .call-btn {
+            width: 100%;
+        }
+        .risk-alert-bar {
+            flex-direction: column;
+            text-align: center;
+        }
+        .risk-emergency-btn {
+            width: 100%;
+        }
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-badge.open {
+        background: #14532d;
+        color: #86efac;
+    }
+
+    .status-badge.limited {
+        background: #451a03;
+        color: #fde047;
+    }
+
+    /* Redirect card */
+    .redirect-card {
+        background: linear-gradient(135deg, #451a03, #713f12);
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #854d0e;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 20px;
+    }
+
+    .redirect-card:hover {
+        transform: translateY(-5px);
+        border-color: #eab308;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+    }
+
+    .redirect-card h3 {
+        color: #fde047;
+        margin-bottom: 8px;
+    }
+
+    .redirect-card p {
+        color: #fef08a;
+        margin-bottom: 16px;
+    }
+
+    .btn-redirect {
+        background: #854d0e;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-block;
+    }
+
+    .btn-redirect:hover {
+        background: #a16207;
+        transform: translateY(-2px);
+    }
+
+    /* Animation for emergency cards */
+    .emergency-card {
+        animation: slideInUp 0.6s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .emergency-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+    .emergency-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    .emergency-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .contacts-section {
+        animation: slideInUp 0.6s ease-out 0.5s both;
+    }
+
+    .safety-section {
+        animation: slideInUp 0.6s ease-out 0.4s both;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Emergency
+{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+        PAGE HEADER
+========================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">
+
+            Emergency Response Centre
+
+        </h2>
+
+        <p class="page-subtitle">
+
+            24/7 Emergency Support for Flood-Affected Communities
+            in Dar es Salaam.
+
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-end">
+
+        <button
+            class="btn btn-danger btn-lg"
+            id="sosButton"
+            onclick="openCallModal('112', 'National Emergency Services')">
+
+            <i class="fa-solid fa-triangle-exclamation"></i>
+
+            SOS EMERGENCY
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        RISK ALERT BAR
+========================================== -->
+
+<div id="riskAlertBar" class="risk-alert-bar"></div>
+
+<!-- ==========================================
+        EMERGENCY STATISTICS
+========================================== -->
+
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card stat-card danger">
+
+            <div>
+
+                <h2>24/7</h2>
+
+                <p>Emergency Support</p>
+
+            </div>
+
+            <i class="fa-solid fa-headset"></i>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card stat-card success">
+
+            <div>
+
+                <h2>12</h2>
+
+                <p>Hospitals</p>
+
+            </div>
+
+            <i class="fa-solid fa-hospital"></i>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card stat-card warning">
+
+            <div>
+
+                <h2>8</h2>
+
+                <p>Evacuation Centres</p>
+
+            </div>
+
+            <i class="fa-solid fa-house"></i>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card stat-card primary">
+
+            <div>
+
+                <h2>15</h2>
+
+                <p>Emergency Teams</p>
+
+            </div>
+
+            <i class="fa-solid fa-people-group"></i>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        EMERGENCY CARDS
+========================================== -->
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px;">
+
+    <div class="emergency-card call" onclick="openCallModal('112', 'National Emergency Services')">
+
+        <div class="emergency-icon"><i class="fa-solid fa-phone-volume"></i></div>
+
+        <h3>Emergency Call</h3>
+
+        <p>Immediate rescue and disaster support</p>
+
+        <div class="btn-emergency-call">
+
+            <i class="fa-solid fa-phone-alt me-2"></i> Call 112 Now
+
+        </div>
+
+        <div style="margin-top: 12px; font-size: 12px; color: #6c757d;">
+
+            <i class="fa-solid fa-clock"></i> Available 24/7 • Free Call
+
+        </div>
+
+    </div>
+
+    <div class="emergency-card evacuation" onclick="openEvacuationModal()">
+
+        <div class="emergency-icon"><i class="fa-solid fa-map-marked-alt"></i></div>
+
+        <h3>Evacuation Centers</h3>
+
+        <p>Find nearest safe shelter locations in Dar es Salaam</p>
+
+        <div style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 12px 24px; border-radius: 40px; font-weight: 600; display: inline-block; width: 100%; border: none; cursor: pointer;">
+
+            <i class="fa-solid fa-search-location me-2"></i> Find Centers
+
+        </div>
+
+        <div style="margin-top: 12px; font-size: 12px; color: #6c757d;">
+
+            <i class="fa-solid fa-building"></i> Shelters in Dar es Salaam
+
+        </div>
+
+    </div>
+
+    <div class="emergency-card alerts" onclick="window.location.href='{% url 'alerts' %}'">
+
+        <div class="emergency-icon"><i class="fa-solid fa-bell"></i></div>
+
+        <h3>View All Alerts</h3>
+
+        <p>Go to complete Alerts Center</p>
+
+        <div style="background: linear-gradient(135deg, #ea580c, #c2410c); color: white; padding: 12px 24px; border-radius: 40px; font-weight: 600; display: inline-block; width: 100%; border: none; cursor: pointer;">
+
+            <i class="fa-solid fa-arrow-right me-2"></i> Alerts Center →
+
+        </div>
+
+        <div style="margin-top: 12px; font-size: 12px; color: #6c757d;">
+
+            <i class="fa-solid fa-chart-line"></i> Full AI predictions & management
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        EMERGENCY CONTACTS
+========================================== -->
+
+<div class="contacts-section">
+
+    <h2 style="color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+
+        <i class="fa-solid fa-phone-alt" style="color: var(--primary);"></i> Emergency Contacts
+
+    </h2>
+
+    <div class="row" id="emergencyContacts">
+
+        <!-- Contacts will be loaded by JavaScript -->
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        SAFETY INSTRUCTIONS
+========================================== -->
+
+<div class="row mt-4 safety-section">
+
+    <div class="col-12">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <i class="fa-solid fa-shield-alt text-primary me-2"></i>
+
+                Flood Safety Instructions
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-lg-6 mb-3 mb-lg-0">
+
+                        <div class="safety-card">
+
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+
+                                    <i class="fa-solid fa-clock" style="color: white;"></i>
+
+                                </div>
+
+                                <h4 style="margin: 0;">Before Flooding</h4>
+
+                            </div>
+
+                            <ul>
+
+                                <li>📦 Prepare emergency food and clean water (3-day supply)</li>
+
+                                <li>📄 Keep important documents in waterproof bags</li>
+
+                                <li>🔋 Charge phones and emergency devices</li>
+
+                                <li>🏠 Know your nearest evacuation center</li>
+
+                                <li>📻 Keep a battery-powered radio</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <div class="safety-card">
+
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+
+                                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #ea580c, #c2410c); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+
+                                    <i class="fa-solid fa-water" style="color: white;"></i>
+
+                                </div>
+
+                                <h4 style="margin: 0;">During Flooding</h4>
+
+                            </div>
+
+                            <ul>
+
+                                <li>⛰️ Move to higher ground immediately</li>
+
+                                <li>🚶 Avoid walking through flood water (6" can knock you down)</li>
+
+                                <li>⚡ Disconnect electricity if safe to do so</li>
+
+                                <li>📱 Follow official government alerts</li>
+
+                                <li>🚗 Never drive through flooded roads</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        REDIRECT TO ALERTS
+========================================== -->
+
+<div class="row mt-4">
+
+    <div class="col-12">
+
+        <div class="redirect-card" onclick="window.location.href='{% url 'alerts' %}'">
+
+            <i class="fa-solid fa-bell" style="font-size: 48px; color: #fde047; margin-bottom: 16px;"></i>
+
+            <h3>📢 Want to see detailed flood alerts?</h3>
+
+            <p>Visit our comprehensive Alerts Center with AI predictions, acknowledge features, and real-time monitoring</p>
+
+            <div class="btn-redirect">
+
+                Go to Alerts Center <i class="fa-solid fa-arrow-right ms-2"></i>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        CALL MODAL
+========================================== -->
+
+<div id="callModal" class="call-modal">
+
+    <div class="call-container">
+
+        <div class="call-animation">
+
+            <i class="fa-solid fa-phone-alt"></i>
+
+        </div>
+
+        <div class="call-number" id="callNumber">112</div>
+
+        <div class="call-status" id="callStatus">Connecting to emergency services...</div>
+
+        <div class="call-buttons">
+
+            <button class="call-btn call-now-btn" onclick="makeActualCall()">
+
+                <i class="fa-solid fa-phone-alt"></i> Call Now
+
+            </button>
+
+            <button class="call-btn cancel-btn" onclick="closeCallModal()">
+
+                <i class="fa-solid fa-times"></i> Cancel
+
+            </button>
+
+        </div>
+
+        <div style="margin-top: 1rem; font-size: 11px; color: #6c757d;">
+
+            <i class="fa-solid fa-info-circle"></i> This service is available 24/7
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        EVACUATION MODAL
+========================================== -->
+
+<div id="evacuationModal" class="evacuation-modal" onclick="closeModalOnOutside(event)">
+
+    <div class="modal-content">
+
+        <div class="modal-header-custom">
+
+            <h2>
+
+                <i class="fa-solid fa-building" style="color: var(--primary);"></i>
+
+                Evacuation Centers in Dar es Salaam
+
+            </h2>
+
+            <button class="modal-close-btn" onclick="closeEvacuationModal()">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <div class="modal-body" id="evacuationCentersList">
+
+            <!-- Centers loaded by JavaScript -->
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        FLOATING SOS BUTTON
+========================================== -->
+
+<div class="fab" onclick="openCallModal('112', 'National Emergency Services')">
+
+    <i class="fa-solid fa-phone-alt"></i>
+
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL EMERGENCY JAVASCRIPT EMBEDDED HERE
+========================================================= -->
+{% block extra_js %}
+
+<script>
+    /*=========================================================
+        FLOODGUARD AI - EMERGENCY PAGE
+    =========================================================*/
+
+    let currentCallNumber = '';
+    let currentCallName = '';
+
+    // Emergency contacts (national and Dar es Salaam specific)
+    const EMERGENCY_CONTACTS = [
+        { name: "National Emergency", number: "112", type: "Central", icon: "fa-tower-cell" },
+        { name: "Dar es Salaam Rescue", number: "0800 110 011", type: "Local", icon: "fa-city" },
+        { name: "Police Emergency", number: "999", type: "Police", icon: "fa-shield-haltered" },
+        { name: "Ambulance Services", number: "115", type: "Medical", icon: "fa-heartbeat" },
+        { name: "Fire Brigade", number: "114", type: "Fire", icon: "fa-fire-extinguisher" },
+        { name: "Red Cross Tanzania", number: "0800 111 000", type: "NGO", icon: "fa-hand-holding-heart" },
+        { name: "Dar es Salaam City Council", number: "022 212 3456", type: "Local", icon: "fa-building" }
+    ];
+
+    // Evacuation centers in Dar es Salaam
+    const EVACUATION_CENTERS = [
+        { name: "Benjamin Mkapa Stadium", region: "Dar es Salaam", capacity: "5,000 people", address: "Kurasini", contact: "+255 22 285 0234", status: "Open" },
+        { name: "Diamond Jubilee Hall", region: "Dar es Salaam", capacity: "2,000 people", address: "Upanga", contact: "+255 22 213 4567", status: "Open" },
+        { name: "Uhuru Stadium", region: "Dar es Salaam", capacity: "4,000 people", address: "Ilala", contact: "+255 22 212 3456", status: "Open" },
+        { name: "Tandale Primary School", region: "Dar es Salaam", capacity: "800 people", address: "Tandale", contact: "+255 22 215 7890", status: "Open" },
+        { name: "Kigogo Community Hall", region: "Dar es Salaam", capacity: "500 people", address: "Kigogo", contact: "+255 22 218 1234", status: "Limited" },
+        { name: "Jangwani Open Ground", region: "Dar es Salaam", capacity: "2,000 people", address: "Jangwani", contact: "", status: "Open" },
+        { name: "Manzese Polytechnic", region: "Dar es Salaam", capacity: "1,200 people", address: "Manzese", contact: "+255 22 276 5432", status: "Open" }
+    ];
+
+    /*=========================================
+        LOAD EMERGENCY CONTACTS
+    =========================================*/
+
+    function loadEmergencyContacts() {
+
+        const container = document.getElementById('emergencyContacts');
+
+        container.innerHTML = EMERGENCY_CONTACTS.map(contact => `
+
+            <div class="col-lg-4 col-md-6 mb-3">
+
+                <div class="contact-card" onclick="openCallModal('${contact.number}', '${contact.name}')">
+
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+
+                        <div style="width: 50px; height: 50px; background: rgba(21,101,192,0.1); border-radius: 25px; display: flex; align-items: center; justify-content: center;">
+
+                            <i class="fa-solid ${contact.icon}" style="color: var(--primary); font-size: 24px;"></i>
+
+                        </div>
+
+                        <div style="text-align: left; flex: 1;">
+
+                            <h5 style="margin-bottom: 2px;">${contact.name}</h5>
+
+                            <p style="margin: 0; font-size: 14px;">
+
+                                <i class="fa-solid fa-phone"></i> ${contact.number}
+
+                            </p>
+
+                        </div>
+
+                        <div style="color: #dc2626; font-size: 18px;">
+
+                            <i class="fa-solid fa-phone-alt"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `).join('');
+
+    }
+
+    /*=========================================
+        LOAD EVACUATION CENTERS
+    =========================================*/
+
+    function loadEvacuationCenters() {
+
+        const container = document.getElementById('evacuationCentersList');
+
+        container.innerHTML = EVACUATION_CENTERS.map(center => `
+
+            <div class="evacuation-center-item ${center.status === 'Limited' ? 'limited' : ''}"
+
+                 onclick="showCenterDetails('${center.name}', '${center.address}', '${center.contact}')">
+
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+
+                    <div>
+
+                        <h3><i class="fa-solid fa-school"></i> ${center.name}</h3>
+
+                        <p>
+
+                            <i class="fa-solid fa-map-marker-alt"></i> ${center.address}
+
+                            • Capacity: ${center.capacity}
+
+                        </p>
+
+                        ${center.contact ? `<p><i class="fa-solid fa-phone"></i> ${center.contact}</p>` : ''}
+
+                    </div>
+
+                    <span class="status-badge ${center.status === 'Open' ? 'open' : 'limited'}">
+
+                        ${center.status === 'Open' ? '✓ Open' : '⚠️ Limited'}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        `).join('');
+
+    }
+
+    /*=========================================
+        RISK ALERT BAR
+    =========================================*/
+
+    async function fetchLatestRiskAlerts() {
+
+        try {
+
+            const response = await fetch('{% url "api_user_predictions" %}');
+
+            if (!response.ok) return [];
+
+            const data = await response.json();
+
+            const predictions = data.predictions || [];
+
+            // Get latest per community
+            const latest = {};
+
+            predictions.forEach(function(pred) {
+
+                const comm = pred.region || pred.community;
+
+                if (!latest[comm] || new Date(pred.created_at) > new Date(latest[comm].created_at)) {
+
+                    latest[comm] = pred;
+
+                }
+
+            });
+
+            // Filter high risk
+            const highRiskCommunities = Object.entries(latest)
+
+                .filter(function([comm, pred]) {
+
+                    return pred.risk_level && pred.risk_level.toUpperCase() === 'HIGH';
+
+                })
+
+                .map(function([comm]) { return comm; });
+
+            return highRiskCommunities;
+
+        } catch (e) {
+
+            console.error('Error fetching alerts:', e);
+
+            return [];
+
+        }
+
+    }
+
+    async function displayRiskAlert() {
+
+        const highRiskComms = await fetchLatestRiskAlerts();
+
+        const alertBar = document.getElementById('riskAlertBar');
+
+        if (highRiskComms && highRiskComms.length > 0) {
+
+            const commList = highRiskComms.join(', ');
+
+            alertBar.style.display = 'flex';
+
+            alertBar.innerHTML = `
+
+                <div class="risk-alert-text">
+
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+
+                    ⚠️ HIGH FLOOD RISK ALERT: ${commList}
+
+                </div>
+
+                <button class="risk-emergency-btn" onclick="openCallModal('112', 'National Emergency Services')">
+
+                    <i class="fa-solid fa-phone-alt"></i> Call Emergency Now
+
+                </button>
+
+            `;
+
+        } else {
+
+            alertBar.style.display = 'none';
+
+        }
+
+    }
+
+    /*=========================================
+        MODAL FUNCTIONS
+    =========================================*/
+
+    function openCallModal(number, name) {
+
+        currentCallNumber = number;
+        currentCallName = name;
+
+        const modal = document.getElementById('callModal');
+
+        document.getElementById('callNumber').textContent = number;
+
+        document.getElementById('callStatus').innerHTML = `📞 Ready to call ${name}...`;
+
+        modal.classList.add('show');
+
+        document.body.style.overflow = 'hidden';
+
+    }
+
+    function closeCallModal() {
+
+        document.getElementById('callModal').classList.remove('show');
+
+        document.body.style.overflow = 'auto';
+
+        currentCallNumber = '';
+        currentCallName = '';
+
+    }
+
+    function makeActualCall() {
+
+        if (currentCallNumber) {
+
+            showToast(`📞 Calling ${currentCallName} (${currentCallNumber})...`, 'warning');
+
+            setTimeout(function() {
+
+                window.location.href = `tel:${currentCallNumber}`;
+
+            }, 500);
+
+            setTimeout(function() {
+
+                closeCallModal();
+
+            }, 1000);
+
+        }
+
+    }
+
+    function openEvacuationModal() {
+
+        const modal = document.getElementById('evacuationModal');
+
+        loadEvacuationCenters();
+
+        modal.classList.add('show');
+
+        document.body.style.overflow = 'hidden';
+
+    }
+
+    function closeEvacuationModal() {
+
+        document.getElementById('evacuationModal').classList.remove('show');
+
+        document.body.style.overflow = 'auto';
+
+    }
+
+    function closeModalOnOutside(event) {
+
+        if (event.target === document.getElementById('evacuationModal')) {
+
+            closeEvacuationModal();
+
+        }
+
+    }
+
+    function showCenterDetails(name, address, contact) {
+
+        if (contact) {
+
+            openCallModal(contact.replace(/[^0-9]/g, ''), `${name} Evacuation Center`);
+
+        } else {
+
+            openCallModal('112', 'National Emergency');
+
+        }
+
+    }
+
+    /*=========================================
+        TOAST NOTIFICATION
+    =========================================*/
+
+    function showToast(message, type) {
+
+        const existing = document.querySelector('.toast-notification');
+
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+
+        toast.className = `toast-notification ${type || 'info'}`;
+
+        const icons = {
+
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle',
+            success: 'fa-check-circle'
+
+        };
+
+        toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+
+        document.body.appendChild(toast);
+
+        setTimeout(function() {
+
+            toast.style.opacity = '0';
+
+            toast.style.transition = '.5s';
+
+            setTimeout(function() {
+
+                toast.remove();
+
+            }, 500);
+
+        }, 4000);
+
+    }
+
+    /*=========================================
+        KEYBOARD SHORTCUTS
+    =========================================*/
+
+    document.addEventListener('keydown', function(e) {
+
+        if (e.key === 'Escape') {
+
+            closeEvacuationModal();
+
+            closeCallModal();
+
+        }
+
+    });
+
+    /*=========================================
+        INITIALIZE
+    =========================================*/
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        loadEmergencyContacts();
+
+        displayRiskAlert();
+
+        // Refresh risk alerts every 60 seconds
+
+        setInterval(displayRiskAlert, 60000);
+
+        // Page fade-in
+
+        document.body.style.opacity = '0';
+
+        document.body.style.transition = '.5s';
+
+        setTimeout(function() {
+
+            document.body.style.opacity = '1';
+
+        }, 100);
+
+        console.log('FloodGuard AI Emergency Module Loaded');
+
+    });
+
+    /*=========================================
+        SOS BUTTON
+    =========================================*/
+
+    // Also handle SOS button click from the header
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const sosBtn = document.getElementById('sosButton');
+
+        if (sosBtn) {
+
+            sosBtn.addEventListener('click', function() {
+
+                openCallModal('112', 'National Emergency Services');
+
+            });
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Flood Prediction{% endblock %}
+
+{% block extra_css %}
+<style>
+    .risk-low { color: #2E7D32; }
+    .risk-medium { color: #F9A825; }
+    .risk-high { color: #D32F2F; }
+
+    .result-detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #edf2f7;
+        align-items: center;
+    }
+    .result-detail-item:last-child {
+        border-bottom: none;
+    }
+    .result-detail-item .label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .result-detail-item .value {
+        font-weight: 600;
+        color: #1E293B;
+    }
+
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        border-radius: 15px;
+        padding: 18px 22px;
+        box-shadow: 0 15px 35px rgba(0,0,0,.15);
+        animation: slideInRight .5s ease;
+        font-weight: 500;
+    }
+    .toast-notification.success {
+        background: #E8F5E9;
+        color: #2E7D32;
+        border-left: 5px solid #2E7D32;
+    }
+    .toast-notification.warning {
+        background: #FFF8E1;
+        color: #F57F17;
+        border-left: 5px solid #F57F17;
+    }
+    .toast-notification.danger {
+        background: #FFEBEE;
+        color: #C62828;
+        border-left: 5px solid #C62828;
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h2 class="page-title">Flood Prediction</h2>
+            <p class="page-subtitle">Generate a flood prediction for your assigned community.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-cloud-sun-rain me-2"></i>
+                    Prediction Parameters
+                </div>
+                <div class="card-body">
+                    <form id="predictionForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">My Community</label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ community.name }}"
+                                   readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Prediction Date</label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="predictionDate"
+                                   value="{{ today|date:'Y-m-d' }}"
+                                   required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="generateBtn">
+                            <i class="fa-solid fa-play"></i> Generate Prediction
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-info-circle me-2"></i>
+                    Your Community
+                </div>
+                <div class="card-body">
+                    <h4>{{ community.name }}</h4>
+                    <p class="text-muted">You are assigned to this community.</p>
+                    <hr>
+                    <p><i class="fa-solid fa-map-pin me-2"></i> Lat: {{ community.latitude }}</p>
+                    <p><i class="fa-solid fa-map-pin me-2"></i> Lng: {{ community.longitude }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Card -->
+    <div class="card mt-4" id="resultCard" style="display:none;">
+        <div class="card-header">
+            <i class="fa-solid fa-chart-pie me-2"></i>
+            Prediction Result
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <h2 class="risk-level" id="riskLevel">--</h2>
+                    <p>Risk Level</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h2 class="text-primary" id="confidenceDisplay">0%</h2>
+                    <p>Confidence</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h2 class="text-success" id="dateDisplay">--</h2>
+                    <p>Date</p>
+                </div>
+            </div>
+
+            <hr>
+            <div id="resultMessage" class="mb-3"></div>
+
+            <div id="resultDetails">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-table me-2"></i>Prediction Details</h6>
+                <div id="detailsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorMessage" style="display:none;">
+        <div class="alert alert-danger text-center mt-4">
+            <i class="fa-solid fa-triangle-exclamation fa-2x d-block mb-3"></i>
+            <strong id="errorTitle">Prediction Failed</strong>
+            <br>
+            <span id="errorText">An error occurred while generating the prediction.</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const form = document.getElementById("predictionForm");
+    const generateBtn = document.getElementById("generateBtn");
+    const resultCard = document.getElementById("resultCard");
+    const errorMessage = document.getElementById("errorMessage");
+
+    const riskLevel = document.getElementById("riskLevel");
+    const confidenceDisplay = document.getElementById("confidenceDisplay");
+    const dateDisplay = document.getElementById("dateDisplay");
+    const resultMessage = document.getElementById("resultMessage");
+    const detailsContainer = document.getElementById("detailsContainer");
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const date = document.getElementById("predictionDate").value;
+
+        if (!date) {
+            showToast("Please select a date.", "warning");
+            return;
+        }
+
+        // Hide previous results
+        resultCard.style.display = "none";
+        errorMessage.style.display = "none";
+
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+        fetch("/api/predict/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                community: "{{ community.name }}",
+                date: date
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fa-solid fa-play"></i> Generate Prediction';
+
+            if (data.error) {
+                document.getElementById("errorTitle").textContent = "Prediction Failed";
+                document.getElementById("errorText").textContent = data.error || "An unknown error occurred.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            displayPrediction(data);
+            resultCard.style.display = "block";
+            errorMessage.style.display = "none";
+            showToast("Prediction generated successfully!", "success");
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fa-solid fa-play"></i> Generate Prediction';
+            document.getElementById("errorTitle").textContent = "Network Error";
+            document.getElementById("errorText").textContent = "Could not connect to the server. Please try again.";
+            errorMessage.style.display = "block";
+        });
+    });
+
+    function displayPrediction(data) {
+        const risk = data.risk_level || "UNKNOWN";
+        const badgeColor = risk === "HIGH" ? "danger" :
+                          risk === "MODERATE" ? "warning" : "success";
+
+        riskLevel.className = "risk-" + risk.toLowerCase();
+        riskLevel.innerHTML = risk;
+
+        const conf = data.confidence || 0;
+        confidenceDisplay.innerHTML = conf + "%";
+
+        const predDate = new Date(data.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        dateDisplay.innerHTML = predDate;
+
+        resultMessage.innerHTML = `
+            <div class="alert alert-${badgeColor}">
+                <strong>Prediction for <strong>${data.community}</strong> on ${predDate}</strong>
+            </div>
+        `;
+
+        const details = [
+            { label: "Community", value: data.community },
+            { label: "Date", value: predDate },
+            { label: "Risk Level", value: `<span class="badge bg-${badgeColor}">${risk}</span>` },
+            { label: "Confidence", value: `${conf}%` },
+            { label: "Rainfall", value: `${data.rainfall || 0} mm` },
+            { label: "Temperature", value: `${data.temperature || 0} °C` },
+            { label: "Humidity", value: `${data.humidity || 0}%` },
+            { label: "Status", value: `<span class="badge bg-${data.flood_risk ? 'danger' : 'success'}">${data.flood_risk ? 'Flood Risk' : 'Safe'}</span>` }
+        ];
+
+        detailsContainer.innerHTML = details.map(d => `
+            <div class="result-detail-item">
+                <span class="label">${d.label}</span>
+                <span class="value">${d.value}</span>
+            </div>
+        `).join('');
+
+        // Scroll to result
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function showToast(message, type) {
+        const existing = document.querySelector('.toast-notification');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        const icons = {
+            success: "fa-check-circle",
+            warning: "fa-exclamation-triangle",
+            info: "fa-info-circle",
+            danger: "fa-times-circle"
+        };
+        const classes = {
+            success: "toast-notification success",
+            warning: "toast-notification warning",
+            info: "toast-notification info",
+            danger: "toast-notification danger"
+        };
+
+        toast.className = classes[type] || classes.info;
+        toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transition = ".5s";
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+});
+</script>
+{% endblock %}

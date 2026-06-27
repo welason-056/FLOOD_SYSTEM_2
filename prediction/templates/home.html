@@ -1,0 +1,1414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FloodGuard AI | Intelligent Early Flood Warning System</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- =========================================================
+           ALL HOMEPAGE CSS EMBEDDED HERE
+    ========================================================= -->
+    <style>
+        /* =====================================================
+           FLOODGUARD AI - HOME PAGE
+        ===================================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f9ff;
+            color: #222;
+            overflow-x: hidden;
+        }
+
+        /* ====================================
+                NAVBAR
+        ==================================== */
+
+        .navbar {
+            background: rgba(13, 71, 161, .92);
+            backdrop-filter: blur(12px);
+            transition: .4s;
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .navbar-brand i {
+            color: #4fc3f7;
+        }
+
+        .nav-link {
+            color: #fff !important;
+            margin-left: 15px;
+            font-weight: 500;
+            transition: .3s;
+        }
+
+        .nav-link:hover {
+            color: #4fc3f7 !important;
+        }
+
+        .navbar .btn {
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+
+        /* ====================================
+                HERO - WITH BACKGROUND IMAGE
+        ==================================== */
+
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background:
+                linear-gradient(rgba(8, 35, 87, .85),
+                rgba(8, 35, 87, .85)),
+                url("{% static 'images/flood-bg.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+        }
+
+        .hero .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .15);
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 5;
+        }
+
+        /* ====================================
+            BADGE TAG
+        ==================================== */
+
+        .hero .badge-tag {
+            display: inline-block;
+            background: rgba(79, 195, 247, 0.15);
+            color: #4fc3f7;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(79, 195, 247, 0.25);
+            backdrop-filter: blur(4px);
+            transition: .3s;
+            opacity: 0;
+            animation: slideUpGlow 1.5s ease forwards;
+        }
+
+        .hero .badge-tag:hover {
+            background: rgba(79, 195, 247, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .hero .badge-tag i {
+            margin-right: 8px;
+        }
+
+        /* ====================================
+            TITLE
+        ==================================== */
+
+        .hero h1 {
+            font-size: 54px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #4fc3f7 50%, #81d4fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            opacity: 0;
+            animation: slideUpGlow 1.5s ease 0.2s forwards, titlePulse 3s ease-in-out 1.5s infinite;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6, #0288d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ====================================
+            PARAGRAPH
+        ==================================== */
+
+        .hero p {
+            font-size: 18px;
+            color: #e0e8f0;
+            margin-bottom: 30px;
+            line-height: 1.8;
+            opacity: 0.95;
+            max-width: 600px;
+            opacity: 0;
+            animation: slideUpGlow 1.5s ease 0.4s forwards;
+        }
+
+        /* ====================================
+            HERO IMAGE
+        ==================================== */
+
+        .hero img {
+            animation: floatImage 5s ease-in-out infinite;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes floatImage {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* ====================================
+            SLIDE-UP GLOW ANIMATION
+        ==================================== */
+
+        @keyframes slideUpGlow {
+            0% {
+                opacity: 0;
+                transform: translateY(60px);
+                filter: blur(10px);
+            }
+            60% {
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes titlePulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(79, 195, 247, 0.2));
+            }
+            50% {
+                filter: drop-shadow(0 0 50px rgba(79, 195, 247, 0.5));
+            }
+        }
+
+        /* ====================================
+                ABOUT SECTION
+        ==================================== */
+
+        .about-section {
+            padding: 80px 0;
+            background: #f0f7ff;
+        }
+
+        .about-section .section-title {
+            font-weight: 700;
+            font-size: 36px;
+            color: #1a237e;
+        }
+
+        .about-section .section-subtitle {
+            font-size: 18px;
+            color: #555;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .about-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+            transition: .4s;
+            height: 100%;
+            border: 1px solid #e8f0fe;
+        }
+
+        .about-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .12);
+            border-color: #1565C0;
+        }
+
+        .about-card .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            font-size: 30px;
+        }
+
+        .about-card .icon-circle.blue {
+            background: #e3f0ff;
+            color: #1565C0;
+        }
+
+        .about-card .icon-circle.green {
+            background: #e6f7ec;
+            color: #2E7D32;
+        }
+
+        .about-card .icon-circle.orange {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .about-card .icon-circle.purple {
+            background: #f3e5f5;
+            color: #6A1B9A;
+        }
+
+        .about-card .icon-circle.red {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .about-card .icon-circle.teal {
+            background: #e0f2f1;
+            color: #00695C;
+        }
+
+        .about-card h4 {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a237e;
+        }
+
+        .about-card p {
+            color: #555;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* ====================================
+                FEATURE CARDS
+        ==================================== */
+
+        .feature-card {
+            border: none;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .08);
+            transition: .4s;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .15);
+        }
+
+        .feature-card i {
+            margin-top: 20px;
+        }
+
+        .feature-card h4 {
+            margin-top: 20px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: #666;
+        }
+
+        /* ====================================
+              COMMUNITIES - DYNAMIC
+        ==================================== */
+
+        .community-grid .card.p-3 {
+            text-align: center;
+            font-weight: 600;
+            transition: .3s;
+            cursor: default;
+        }
+
+        .community-grid .card.p-3:hover {
+            background: #1565C0;
+            color: #fff;
+            transform: translateY(-5px);
+        }
+
+        /* ====================================
+                FOOTER
+        ==================================== */
+
+        footer {
+            background: #0D47A1;
+        }
+
+        footer h4 {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        footer p {
+            color: #ddd;
+        }
+
+        /* ====================================
+                ANIMATIONS
+        ==================================== */
+
+        .fade-up {
+            animation: fadeUp .8s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ====================================
+                SCROLLBAR
+        ==================================== */
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1565C0;
+            border-radius: 30px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #eef5fd;
+        }
+
+        /* ====================================
+                RESPONSIVE
+        ==================================== */
+
+        @media(max-width:992px) {
+            .hero {
+                text-align: center;
+            }
+            .hero h1 {
+                font-size: 42px;
+            }
+            .hero img {
+                margin-top: 50px;
+            }
+            .hero p {
+                max-width: 100%;
+            }
+        }
+
+        @media(max-width:768px) {
+            .hero h1 {
+                font-size: 34px;
+            }
+            .hero p {
+                font-size: 16px;
+            }
+            .navbar-brand {
+                font-size: 22px;
+            }
+            section {
+                padding: 60px 0;
+            }
+            .about-section {
+                padding: 60px 0;
+            }
+            .about-card {
+                margin-bottom: 20px;
+            }
+        }
+
+        @media(max-width:576px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            .hero .badge-tag {
+                font-size: 11px;
+                padding: 6px 16px;
+            }
+            .community-grid .col-6 {
+                padding: 0 6px;
+            }
+        }
+
+        /* Button Ripple Effect */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .4);
+            transform: scale(0);
+            animation: rippleAnim .6s linear;
+            pointer-events: none;
+            width: 100px;
+            height: 100px;
+            margin-left: -50px;
+            margin-top: -50px;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Back to Top Button */
+        #backToTop {
+            position: fixed;
+            right: 25px;
+            bottom: 25px;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1565C0, #0D47A1);
+            color: #fff;
+            display: none;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
+            transition: all .3s ease;
+            font-size: 20px;
+        }
+
+        #backToTop:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(21, 101, 192, 0.5);
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- ==========================================
+         NAVBAR
+    =========================================== -->
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+
+        <div class="container">
+
+            <a class="navbar-brand fw-bold" href="#">
+
+                <i class="fa-solid fa-water"></i>
+
+                FloodGuard AI
+
+            </a>
+
+            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+            <div class="collapse navbar-collapse" id="nav">
+
+                <ul class="navbar-nav ms-auto">
+
+                    <li class="nav-item">
+
+                        <a class="nav-link" href="#home">Home</a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a class="nav-link" href="#about">About</a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a class="nav-link" href="#features">Features</a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a class="nav-link" href="#contact">Contact</a>
+
+                    </li>
+
+                    <li class="nav-item ms-3">
+
+                        <a href="{% url 'login' %}" class="btn btn-light">
+
+                            Login
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item ms-2">
+
+                        <a href="{% url 'register' %}" class="btn btn-warning">
+
+                            Register
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <!-- ==========================================
+         HERO
+    =========================================== -->
+
+    <section class="hero" id="home">
+
+        <div class="overlay"></div>
+
+        <div class="container">
+
+            <div class="row align-items-center min-vh-100">
+
+                <div class="col-lg-7">
+
+                    <div class="badge-tag">
+                        <i class="fa-solid fa-microchip"></i> AI-Powered Early Warning System
+                    </div>
+
+                    <h1>
+                        AI Enabled Early Flood Prediction<br>
+                        <span class="highlight">And Alert System</span><br>
+                        For Community Level Disaster Mitigations
+                    </h1>
+
+                    <p>
+
+                        Focused on Dar es Salaam Flood-Prone Communities
+
+                        using Artificial Intelligence and Machine Learning.
+
+                    </p>
+
+                </div>
+
+                <div class="col-lg-5 text-center">
+
+                    <img
+
+                        src="{% static 'images/flood-home.png' %}"
+
+                        class="img-fluid"
+
+                        alt="FloodGuard AI">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         ABOUT SECTION - STATS REMOVED
+    =========================================== -->
+
+    <section class="about-section" id="about">
+
+        <div class="container">
+
+            <div class="text-center mb-5">
+
+                <span class="badge-tag" style="display:inline-block; background:rgba(21,101,192,0.1); color:#1565C0; padding:6px 20px; border-radius:30px; font-size:13px; font-weight:600; border:1px solid rgba(21,101,192,0.2);">
+                    <i class="fa-solid fa-info-circle me-2"></i> About the System
+                </span>
+
+                <h2 class="section-title mt-3">
+
+                    Protecting Communities Through <br>Intelligent Flood Prediction
+
+                </h2>
+
+                <p class="section-subtitle">
+
+                    FloodGuard AI is an innovative AI-powered early warning system
+                    designed to predict and mitigate flood risks in Dar es Salaam's
+                    most vulnerable communities.
+
+                </p>
+
+            </div>
+
+            <!-- Mission & Vision -->
+            <div class="row mb-5">
+
+                <div class="col-md-6 mb-3 mb-md-0">
+
+                    <div class="about-card">
+
+                        <div class="icon-circle blue">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+
+                        <h4>Our Mission</h4>
+
+                        <p>
+
+                            To empower flood-prone communities in Dar es Salaam with
+                            accurate, timely, and actionable flood predictions using
+                            Artificial Intelligence and Machine Learning, reducing
+                            disaster risks and saving lives.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="about-card">
+
+                        <div class="icon-circle green">
+                            <i class="fa-solid fa-eye"></i>
+                        </div>
+
+                        <h4>Our Vision</h4>
+
+                        <p>
+
+                            A flood-resilient Tanzania where communities are equipped
+                            with intelligent early warning systems that enable proactive
+                            disaster preparedness and response, minimizing the impact
+                            of flood disasters.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- How It Works -->
+            <div class="row mb-5">
+
+                <div class="col-12">
+
+                    <h3 class="text-center mb-4" style="font-weight:700; color:#1a237e;">
+
+                        <i class="fa-solid fa-robot me-2" style="color:#1565C0;"></i>
+
+                        How FloodGuard AI Works
+
+                    </h3>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="about-card text-center">
+
+                        <div class="icon-circle orange" style="margin:0 auto 18px;">
+                            <i class="fa-solid fa-cloud-rain"></i>
+                        </div>
+
+                        <h4>1. Data Collection</h4>
+
+                        <p>
+
+                            The system collects real-time weather data including
+                            rainfall, temperature, humidity, and river water levels
+                            from trusted meteorological sources.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="about-card text-center">
+
+                        <div class="icon-circle purple" style="margin:0 auto 18px;">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+
+                        <h4>2. AI Analysis</h4>
+
+                        <p>
+
+                            Our advanced Machine Learning algorithm analyzes the data,
+                            identifies patterns, and predicts flood risks with over
+                            95% accuracy for each community.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="about-card text-center">
+
+                        <div class="icon-circle red" style="margin:0 auto 18px;">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+
+                        <h4>3. Instant Alerts</h4>
+
+                        <p>
+
+                            When a high flood risk is detected, the system immediately
+                            sends alerts to community members, emergency services, and
+                            local authorities for swift action.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Key Benefits -->
+            <div class="row mb-5">
+
+                <div class="col-12">
+
+                    <h3 class="text-center mb-4" style="font-weight:700; color:#1a237e;">
+
+                        <i class="fa-solid fa-star me-2" style="color:#F9A825;"></i>
+
+                        Why FloodGuard AI Matters
+
+                    </h3>
+
+                </div>
+
+                <div class="col-md-3 col-6">
+
+                    <div class="about-card text-center" style="padding:20px;">
+
+                        <div class="icon-circle teal" style="margin:0 auto 15px; width:60px; height:60px; font-size:24px;">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+
+                        <h5 style="font-size:15px;">Early Warning</h5>
+
+                        <p style="font-size:13px;">
+
+                            Predictions hours before flooding occurs.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3 col-6">
+
+                    <div class="about-card text-center" style="padding:20px;">
+
+                        <div class="icon-circle blue" style="margin:0 auto 15px; width:60px; height:60px; font-size:24px;">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+
+                        <h5 style="font-size:15px;">Life Protection</h5>
+
+                        <p style="font-size:13px;">
+
+                            Saving lives through proactive action.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3 col-6">
+
+                    <div class="about-card text-center" style="padding:20px;">
+
+                        <div class="icon-circle green" style="margin:0 auto 15px; width:60px; height:60px; font-size:24px;">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+
+                        <h5 style="font-size:15px;">Data-Driven</h5>
+
+                        <p style="font-size:13px;">
+
+                            Powered by AI and real-time data.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3 col-6">
+
+                    <div class="about-card text-center" style="padding:20px;">
+
+                        <div class="icon-circle orange" style="margin:0 auto 15px; width:60px; height:60px; font-size:24px;">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+
+                        <h5 style="font-size:15px;">Community Focus</h5>
+
+                        <p style="font-size:13px;">
+
+                            Designed for Dar es Salaam communities.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ====== STATS SECTION REMOVED ====== -->
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         FEATURES
+    =========================================== -->
+
+    <section class="py-5" id="features">
+
+        <div class="container">
+
+            <h2 class="text-center section-title mb-5">
+
+                System Features
+
+            </h2>
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <div class="card feature-card h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="fa-solid fa-brain fa-3x text-primary"></i>
+
+                            <h4 class="mt-3">
+
+                                AI Prediction
+
+                            </h4>
+
+                            <p>
+
+                                Predict flood risk using machine learning.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="card feature-card h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="fa-solid fa-bell fa-3x text-danger"></i>
+
+                            <h4 class="mt-3">
+
+                                Real-Time Alerts
+
+                            </h4>
+
+                            <p>
+
+                                Receive flood alerts instantly.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <div class="card feature-card h-100">
+
+                        <div class="card-body text-center">
+
+                            <i class="fa-solid fa-map-location-dot fa-3x text-success"></i>
+
+                            <h4 class="mt-3">
+
+                                Flood Map
+
+                            </h4>
+
+                            <p>
+
+                                Interactive flood-prone community map.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         COMMUNITIES - DYNAMIC FROM DATABASE
+    =========================================== -->
+
+    <section class="py-5 bg-light community-grid">
+
+        <div class="container">
+
+            <h2 class="text-center section-title mb-4">
+
+                Dar es Salaam Flood-Prone Communities
+
+            </h2>
+
+            <div class="row">
+
+                {% for community in communities %}
+
+                <div class="col-md-3 col-6 mb-3">
+
+                    <div class="card p-3 text-center">
+
+                        {{ community.name }}
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="col-12 text-center text-muted py-4">
+
+                    <i class="fa-solid fa-database fa-2x mb-3 d-block"></i>
+
+                    No communities found in the database.
+
+                    <br>
+
+                    <small>Please add communities through the admin panel.</small>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <div class="text-center mt-4">
+
+                <small class="text-muted">
+
+                    <i class="fa-solid fa-database me-2"></i>
+
+                    Total Communities: {{ total_communities }}
+
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ==========================================
+         FOOTER - WITH EMERGENCY CONTACTS & TMA
+    =========================================== -->
+
+    <footer class="bg-dark text-white py-4" id="contact">
+
+        <div class="container">
+
+            <div class="row">
+
+                <!-- Brand -->
+                <div class="col-lg-4 text-center text-lg-start mb-3 mb-lg-0">
+
+                    <h4 class="fw-bold">FloodGuard AI</h4>
+
+                    <p class="text-muted small">
+
+                        AI Enabled Early Flood Prediction and Alert System
+
+                    </p>
+
+                </div>
+
+                <!-- Emergency Contacts -->
+                <div class="col-lg-4 text-center mb-3 mb-lg-0">
+
+                    <h6 class="fw-bold text-uppercase" style="color: #4fc3f7;">
+
+                        <i class="fa-solid fa-phone-volume me-2"></i> Emergency Contacts
+
+                    </h6>
+
+                    <p class="mb-1">
+
+                        🚓 Police : <strong class="text-light">999</strong>
+
+                    </p>
+
+                    <p class="mb-1">
+
+                        🚑 Ambulance : <strong class="text-light">115</strong>
+
+                    </p>
+
+                    <p class="mb-1">
+
+                        🚒 Fire & Rescue : <strong class="text-light">114</strong>
+
+                    </p>
+
+                    <p class="mb-0">
+
+                        🌊 Disaster Management : <strong class="text-light">191</strong>
+
+                    </p>
+
+                </div>
+
+                <!-- TMA Contact -->
+                <div class="col-lg-4 text-center text-lg-end">
+
+                    <h6 class="fw-bold text-uppercase" style="color: #4fc3f7;">
+
+                        <i class="fa-solid fa-cloud-sun me-2"></i> Tanzania Meteorological Authority
+
+                    </h6>
+
+                    <p class="mb-1">
+
+                        <i class="fa-solid fa-phone me-2"></i> +255 22 246 0718
+
+                    </p>
+
+                    <p class="mb-1">
+
+                        <i class="fa-solid fa-envelope me-2"></i> info@meteo.go.tz
+
+                    </p>
+
+                    <p class="mb-0">
+
+                        <i class="fa-solid fa-globe me-2"></i> www.meteo.go.tz
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <hr class="border-secondary">
+
+            <div class="text-center">
+
+                <p class="mb-0 small text-muted">
+
+                    © <span id="year"></span> FloodGuard AI | ISM Final Year Project
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+    <!-- ==========================================
+         BOOTSTRAP JS
+    =========================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- ==========================================
+         ALL HOMEPAGE JAVASCRIPT EMBEDDED HERE
+    =========================================== -->
+
+    <script>
+        /*=========================================================
+            FLOODGUARD AI
+            HOME PAGE JAVASCRIPT
+        =========================================================*/
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            /*====================================
+                LOADING ANIMATION
+            ====================================*/
+
+            document.body.classList.add("loaded");
+
+            /*====================================
+                CURRENT YEAR
+            ====================================*/
+
+            const year = document.getElementById("year");
+
+            if (year) {
+                year.textContent = new Date().getFullYear();
+            }
+
+            /*====================================
+                NAVBAR SCROLL EFFECT
+            ====================================*/
+
+            const navbar = document.querySelector(".navbar");
+
+            window.addEventListener("scroll", function() {
+
+                if (window.scrollY > 50) {
+
+                    navbar.style.background = "#0D47A1";
+                    navbar.style.padding = "10px 0";
+                    navbar.style.boxShadow = "0 8px 20px rgba(0,0,0,.2)";
+
+                } else {
+
+                    navbar.style.background = "rgba(13,71,161,.92)";
+                    navbar.style.padding = "15px 0";
+                    navbar.style.boxShadow = "none";
+
+                }
+
+            });
+
+            /*====================================
+                SMOOTH SCROLL
+            ====================================*/
+
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+
+                anchor.addEventListener("click", function(e) {
+
+                    const target = document.querySelector(this.getAttribute("href"));
+
+                    if (!target) return;
+
+                    e.preventDefault();
+
+                    target.scrollIntoView({
+
+                        behavior: "smooth"
+
+                    });
+
+                });
+
+            });
+
+            /*====================================
+                CARD ANIMATION
+            ====================================*/
+
+            const cards = document.querySelectorAll(".card:not(.p-3), .about-card, .feature-card");
+
+            const cardObserver = new IntersectionObserver(entries => {
+
+                entries.forEach(entry => {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.classList.add("fade-up");
+
+                    }
+
+                });
+
+            }, {
+
+                threshold: .15
+
+            });
+
+            cards.forEach(card => {
+
+                cardObserver.observe(card);
+
+            });
+
+            /*====================================
+                BACK TO TOP BUTTON
+            ====================================*/
+
+            let topBtn = document.createElement("button");
+
+            topBtn.id = "backToTop";
+
+            topBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+
+            document.body.appendChild(topBtn);
+
+            window.addEventListener("scroll", function() {
+
+                if (window.scrollY > 400) {
+
+                    topBtn.style.display = "block";
+
+                } else {
+
+                    topBtn.style.display = "none";
+
+                }
+
+            });
+
+            topBtn.addEventListener("click", function() {
+
+                window.scrollTo({
+
+                    top: 0,
+
+                    behavior: "smooth"
+
+                });
+
+            });
+
+            /*====================================
+                HERO IMAGE PARALLAX
+            ====================================*/
+
+            const heroImage = document.querySelector(".hero img");
+
+            window.addEventListener("scroll", function() {
+
+                if (!heroImage) return;
+
+                heroImage.style.transform =
+
+                    "translateY(" + (window.scrollY * 0.08) + "px)";
+
+            });
+
+            /*====================================
+                BUTTON RIPPLE EFFECT
+            ====================================*/
+
+            document.querySelectorAll(".btn").forEach(btn => {
+
+                btn.addEventListener("click", function(e) {
+
+                    const ripple = document.createElement("span");
+
+                    ripple.className = "ripple";
+
+                    const rect = this.getBoundingClientRect();
+
+                    ripple.style.left = (e.clientX - rect.left) + "px";
+                    ripple.style.top = (e.clientY - rect.top) + "px";
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+
+                        ripple.remove();
+
+                    }, 600);
+
+                });
+
+            });
+
+            /*====================================
+                CONSOLE MESSAGE
+            ====================================*/
+
+            console.log(
+
+                "%cFloodGuard AI Loaded Successfully",
+
+                "color:#1565C0;font-size:18px;font-weight:bold;"
+
+            );
+
+        });
+    </script>
+
+</body>
+
+</html>

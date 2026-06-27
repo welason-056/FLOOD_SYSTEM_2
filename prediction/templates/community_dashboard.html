@@ -1,0 +1,1010 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Community Dashboard - {{ community.name }}{% endblock %}
+
+<!-- =========================================================
+       ALL DASHBOARD CSS EMBEDDED HERE (same as admin)
+========================================================= -->
+{% block extra_css %}
+<style>
+    /*=========================================================
+        FLOODGUARD AI DASHBOARD
+    =========================================================*/
+
+    :root{
+        --primary:#1565C0;
+        --primary-dark:#0D47A1;
+        --success:#2E7D32;
+        --warning:#F9A825;
+        --danger:#D32F2F;
+        --light:#F4F8FD;
+        --white:#FFFFFF;
+        --dark:#1E293B;
+        --radius:18px;
+        --shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+
+    body{
+        background:var(--light);
+    }
+
+    .page-title{
+        font-size:32px;
+        font-weight:700;
+        color:var(--dark);
+    }
+
+    .page-subtitle{
+        color:#6c757d;
+        font-size:16px;
+    }
+
+    .card{
+        border:none;
+        border-radius:var(--radius);
+        box-shadow:var(--shadow);
+        transition:.35s;
+        overflow:hidden;
+    }
+
+    .card:hover{
+        transform:translateY(-6px);
+        box-shadow:0 20px 40px rgba(0,0,0,.12);
+    }
+
+    .card-header{
+        background:#fff;
+        border-bottom:1px solid #edf2f7;
+        font-weight:600;
+        padding:18px 22px;
+    }
+
+    .card-body{
+        padding:25px;
+    }
+
+    .stat-card{
+        position:relative;
+        color:#fff;
+        padding:25px;
+        border-radius:20px;
+        overflow:hidden;
+    }
+
+    .stat-card h2{
+        font-size:34px;
+        font-weight:700;
+        color:#fff;
+    }
+
+    .stat-card p{
+        margin-top:10px;
+        color:rgba(255,255,255,.9);
+    }
+
+    .stat-card i{
+        position:absolute;
+        right:25px;
+        bottom:20px;
+        font-size:50px;
+        opacity:.2;
+    }
+
+    .stat-card.primary{ background:linear-gradient(135deg,#1565C0,#42A5F5); }
+    .stat-card.success{ background:linear-gradient(135deg,#2E7D32,#66BB6A); }
+    .stat-card.warning{ background:linear-gradient(135deg,#F9A825,#FFD54F); }
+    .stat-card.danger{ background:linear-gradient(135deg,#D32F2F,#EF5350); }
+
+    .stat-card.risk-low{ background:linear-gradient(135deg,#2E7D32,#66BB6A); }
+    .stat-card.risk-medium{ background:linear-gradient(135deg,#F9A825,#FFD54F); }
+    .stat-card.risk-high{ background:linear-gradient(135deg,#D32F2F,#EF5350); }
+
+    .btn{
+        border-radius:12px;
+        font-weight:600;
+        position:relative;
+        overflow:hidden;
+    }
+
+    .btn-primary{
+        background:#1565C0;
+        border:none;
+    }
+
+    .btn-primary:hover{
+        background:#0D47A1;
+        transform:translateY(-2px);
+    }
+
+    .btn-primary:disabled{
+        opacity:0.7;
+        cursor:not-allowed;
+    }
+
+    .ripple{
+        position:absolute;
+        border-radius:50%;
+        background:rgba(255,255,255,.4);
+        transform:scale(0);
+        animation:rippleAnim .6s linear;
+        pointer-events:none;
+    }
+
+    @keyframes rippleAnim{
+        to{ transform:scale(4); opacity:0; }
+    }
+
+    canvas{
+        width:100%!important;
+    }
+
+    #riskTimelineChart {
+        min-height: 300px;
+    }
+
+    .badge{
+        border-radius:30px;
+        padding:8px 12px;
+        font-size:12px;
+    }
+
+    .quick-action{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        background:#fff;
+        border-radius:15px;
+        padding:18px;
+        transition:.3s;
+        box-shadow:0 8px 20px rgba(0,0,0,.05);
+        cursor:pointer;
+    }
+
+    .quick-action:hover{
+        background:#1565C0;
+        color:#fff;
+        transform:translateY(-4px);
+    }
+
+    .quick-action i{
+        font-size:24px;
+    }
+
+    .status-item{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:15px;
+        padding:10px 12px;
+        border-radius:10px;
+        transition:.3s;
+        cursor:pointer;
+    }
+
+    .status-item:hover{
+        background:#f4f8fd !important;
+    }
+
+    .notification-bell{
+        cursor:pointer;
+    }
+
+    .notification-bell:hover{
+        color:var(--primary);
+    }
+
+    .fade-up{
+        animation:fadeUp .8s ease;
+    }
+
+    @keyframes fadeUp{
+        from{ opacity:0; transform:translateY(30px); }
+        to{ opacity:1; transform:translateY(0); }
+    }
+
+    @media(max-width:1200px){ .page-title{ font-size:28px; } }
+    @media(max-width:992px){ .card{ margin-bottom:20px; } .stat-card{ margin-bottom:20px; } }
+    @media(max-width:768px){ .page-title{ font-size:24px; } .card-body{ padding:20px; } }
+    @media(max-width:576px){ .btn{ width:100%; margin-bottom:10px; } .page-title{ font-size:22px; } }
+
+    .system-status{
+        font-weight:600;
+    }
+    .text-success{
+        color:#2E7D32 !important;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state i {
+        font-size: 64px;
+        color: #1565C0;
+        margin-bottom: 20px;
+        opacity: 0.6;
+    }
+    .empty-state h4 {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 10px;
+    }
+    .empty-state p {
+        color: #6c757d;
+        font-size: 16px;
+    }
+    .empty-state a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Community Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- ======================================
+        PAGE HEADER
+====================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">Community Dashboard – {{ community.name }}</h2>
+
+        <p class="page-subtitle">
+            Real‑time flood risk for <strong>{{ community.name }}</strong> –
+            monitored by AI and updated daily.
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-lg-end">
+
+        <button class="btn btn-primary" id="refreshDashboard">
+            <i class="fa-solid fa-rotate"></i> Refresh
+        </button>
+
+        <button class="btn btn-primary" id="predictNowBtn">
+            <i class="fa-solid fa-brain"></i> Predict Now
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ======================================
+        DASHBOARD CONTENT (hidden when no predictions)
+====================================== -->
+
+<div id="dashboardContent" style="display:none;">
+
+    <!-- STATISTICS -->
+    <div class="row g-4">
+
+        <!-- Rainfall -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card primary">
+                <div>
+                    <h2 id="todayRainfall">--</h2>
+                    <p>Today's Rainfall</p>
+                </div>
+                <i class="fa-solid fa-cloud-rain"></i>
+            </div>
+        </div>
+
+        <!-- Flood Risk - DYNAMIC COLOR -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card risk-low" id="riskCard">
+                <div>
+                    <h2 id="overallRisk">--</h2>
+                    <p>Flood Risk</p>
+                </div>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+        </div>
+
+        <!-- Active Alerts -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card warning">
+                <div>
+                    <h2 id="activeAlerts">--</h2>
+                    <p>Active Alerts</p>
+                </div>
+                <i class="fa-solid fa-bell notification-bell"></i>
+            </div>
+        </div>
+
+        <!-- Total Predictions -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card success">
+                <div>
+                    <h2 id="totalPredictions">--</h2>
+                    <p>Total Predictions</p>
+                </div>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DAILY TIMELINE CHART (7 days) -->
+    <div class="row mt-4">
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <i class="fa-solid fa-calendar-day me-2"></i>
+                    Daily Flood Risk Prediction: Historical vs. AI Forecast
+                </div>
+
+                <div class="card-body">
+                    <canvas id="riskTimelineChart" height="120"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RISK DISTRIBUTION (Doughnut) -->
+    <div class="row mt-4">
+
+        <div class="col-12 col-lg-6 offset-lg-3">
+
+            <div class="card">
+
+                <div class="card-header">Risk Distribution</div>
+
+                <div class="card-body">
+                    <canvas id="riskChart" height="200"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="row mt-4">
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <div class="card-header">Quick Actions</div>
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-3 col-6">
+                            <div class="quick-action text-center" onclick="location.href='/map/'">
+                                <i class="fa-solid fa-map"></i> View Map
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <div class="quick-action text-center" onclick="location.href='{% url 'my_alerts' %}'">
+                                <i class="fa-solid fa-bell"></i> My Alerts
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <div class="quick-action text-center" onclick="location.href='{% url 'emergency' %}'">
+                                <i class="fa-solid fa-phone"></i> Emergency
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <div class="quick-action text-center" onclick="location.href='{% url 'flood_prediction' %}'">
+                                <i class="fa-solid fa-brain"></i> Predict
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- COMMUNITY STATUS – SHOWS ONLY THIS COMMUNITY -->
+    <div class="row mt-4" id="communityStatusRow">
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <i class="fa-solid fa-house-chimney me-2"></i> {{ community.name }} Status
+                </div>
+
+                <div class="card-body" id="communityStatusContainer">
+                    <!-- Filled by JavaScript -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ======================================
+        EMPTY STATE (shown when no predictions)
+====================================== -->
+
+<div id="emptyDashboardMessage" style="display:none;">
+
+    <div class="card">
+        <div class="card-body empty-state">
+            <i class="fa-solid fa-database"></i>
+            <h4>No Predictions for {{ community.name }}</h4>
+            <p>
+                Generate a prediction for your community using the
+                <a href="{% url 'flood_prediction' %}">Flood Prediction</a> page
+                or click the <strong>Predict Now</strong> button above.
+            </p>
+            <button class="btn btn-primary mt-3" id="predictNowBtnEmpty">
+                <i class="fa-solid fa-brain"></i> Predict Now
+            </button>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL DASHBOARD JAVASCRIPT – FILTERED TO COMMUNITY
+========================================================= -->
+{% block extra_js %}
+
+<!-- Chart.js v4 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        console.log("Community Dashboard Loaded for {{ community.name }}");
+
+        // DOM refs
+        const dashboardContent = document.getElementById('dashboardContent');
+        const emptyMessage = document.getElementById('emptyDashboardMessage');
+        const communityStatusRow = document.getElementById('communityStatusRow');
+
+        const todayRainfall = document.getElementById('todayRainfall');
+        const overallRisk = document.getElementById('overallRisk');
+        const riskCard = document.getElementById('riskCard');
+        const activeAlerts = document.getElementById('activeAlerts');
+        const totalPredictions = document.getElementById('totalPredictions');
+        const communityStatusContainer = document.getElementById('communityStatusContainer');
+
+        // The community name from Django context
+        const communityName = "{{ community.name }}";
+
+        let allPredictions = [];
+
+        // Chart instances
+        let timelineChart = null;
+        let riskChart = null;
+
+        /*=========================================
+            FETCH DATA & FILTER BY COMMUNITY
+        =========================================*/
+
+        function fetchPredictions() {
+            return fetch('/api/user-predictions/')
+                .then(response => response.json())
+                .then(data => {
+                    const raw = data.predictions || [];
+                    // Filter to only this community
+                    const filtered = raw.filter(p => p.community === communityName);
+                    // Further filter out placeholder/incomplete entries
+                    const valid = filtered.filter(p => {
+                        return (p.rainfall_mm || p.rainfall || 0) > 0 ||
+                               (p.temperature_c || p.temperature || 0) > 0 ||
+                               (p.confidence || p.confidence_percent || 0) > 0;
+                    });
+                    console.log(`✅ Loaded ${raw.length} total, ${filtered.length} for ${communityName}, ${valid.length} valid`);
+                    allPredictions = valid;
+                    return allPredictions;
+                })
+                .catch(error => {
+                    console.error('Error fetching predictions:', error);
+                    showToast('Failed to load dashboard data.', 'danger');
+                    return [];
+                });
+        }
+
+        /*=========================================
+            UPDATE RISK CARD COLOR
+        =========================================*/
+
+        function updateRiskCardColor(riskLevel) {
+            riskCard.classList.remove('risk-low', 'risk-medium', 'risk-high');
+            if (riskLevel === 'High' || riskLevel === 'HIGH') {
+                riskCard.classList.add('risk-high');
+            } else if (riskLevel === 'Medium' || riskLevel === 'MODERATE') {
+                riskCard.classList.add('risk-medium');
+            } else {
+                riskCard.classList.add('risk-low');
+            }
+        }
+
+        /*=========================================
+            BUILD DAILY RISK DATA FROM PREDICTIONS
+        =========================================*/
+
+        function prepareDailyRiskData(predictions) {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            // Group by date and compute average risk percentage
+            const dateMap = {};
+            predictions.forEach(p => {
+                const d = p.date ? p.date.split('T')[0] : '';
+                if (d) {
+                    let riskPct = 0;
+                    if (p.risk_level === 'HIGH') riskPct = 100;
+                    else if (p.risk_level === 'MODERATE') riskPct = 66;
+                    else if (p.risk_level === 'LOW') riskPct = 33;
+                    if (!dateMap[d]) {
+                        dateMap[d] = { sum: 0, count: 0 };
+                    }
+                    dateMap[d].sum += riskPct;
+                    dateMap[d].count++;
+                }
+            });
+
+            const dailyAvg = {};
+            Object.keys(dateMap).forEach(d => {
+                dailyAvg[d] = Math.round(dateMap[d].sum / dateMap[d].count);
+            });
+
+            // Determine today's risk (fallback)
+            let todayRisk = dailyAvg[todayStr] || null;
+            if (todayRisk === null && predictions.length > 0) {
+                const sorted = [...predictions].sort((a, b) => new Date(b.date) - new Date(a.date));
+                const latest = sorted[0];
+                if (latest) {
+                    if (latest.risk_level === 'HIGH') todayRisk = 100;
+                    else if (latest.risk_level === 'MODERATE') todayRisk = 66;
+                    else if (latest.risk_level === 'LOW') todayRisk = 33;
+                }
+            }
+            if (todayRisk === null) todayRisk = 30;
+
+            // Build 7‑day arrays with extrapolation
+            const labels = [];
+            const historical = [];
+            const predicted = [];
+            const dateStrings = [];
+
+            for (let i = -3; i <= 3; i++) {
+                const d = new Date(today);
+                d.setDate(d.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                labels.push(formattedDate);
+                dateStrings.push(dateStr);
+
+                if (i < 0) {
+                    let val = dailyAvg[dateStr] || null;
+                    if (val === null) {
+                        const decrease = Math.abs(i) * 8;
+                        val = Math.max(0, Math.min(100, todayRisk - decrease));
+                    }
+                    historical.push(val);
+                    predicted.push(null);
+                } else if (i === 0) {
+                    const val = dailyAvg[dateStr] || todayRisk;
+                    historical.push(null);
+                    predicted.push(val);
+                } else {
+                    let val = dailyAvg[dateStr] || null;
+                    if (val === null) {
+                        const decrease = i * 8;
+                        val = Math.max(0, todayRisk - decrease);
+                    }
+                    historical.push(null);
+                    predicted.push(val);
+                }
+            }
+
+            const todayIndex = 3;
+            return { labels, historical, predicted, dateStrings, todayIndex };
+        }
+
+        /*=========================================
+            RENDER DASHBOARD
+        =========================================*/
+
+        function renderDashboard() {
+
+            if (allPredictions.length === 0) {
+                dashboardContent.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                return;
+            } else {
+                dashboardContent.style.display = 'block';
+                emptyMessage.style.display = 'none';
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const todayPreds = allPredictions.filter(p => p.date && p.date.startsWith(today));
+
+            // Rainfall
+            const rainfallSum = todayPreds.reduce((sum, p) => sum + (p.rainfall_mm || p.rainfall || 0), 0);
+            const avgRainfall = todayPreds.length ? (rainfallSum / todayPreds.length) : 0;
+            todayRainfall.textContent = avgRainfall.toFixed(1) + ' mm';
+
+            // Risk
+            const highRiskToday = todayPreds.filter(p => p.risk_level === 'HIGH');
+            const riskLevel = highRiskToday.length > 0 ? 'HIGH' : (todayPreds.some(p => p.risk_level === 'MODERATE') ? 'MEDIUM' : 'LOW');
+            const displayRisk = riskLevel === 'HIGH' ? 'High' : (riskLevel === 'MEDIUM' ? 'Medium' : 'Low');
+            overallRisk.textContent = displayRisk;
+            updateRiskCardColor(displayRisk);
+
+            // Active Alerts (today's HIGH)
+            activeAlerts.textContent = highRiskToday.length;
+
+            // Total Predictions
+            totalPredictions.textContent = allPredictions.length;
+
+            // Community Status (only this community)
+            const sorted = [...allPredictions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const latest = sorted[0] || null;
+            if (latest) {
+                const riskClass = latest.risk_level === 'HIGH' ? 'danger' :
+                                  latest.risk_level === 'MODERATE' ? 'warning' : 'success';
+                const riskLabel = latest.risk_level === 'HIGH' ? 'High' :
+                                  latest.risk_level === 'MODERATE' ? 'Medium' : 'Safe';
+                communityStatusContainer.innerHTML = `
+                    <div class="status-item" style="background:#f8f9fa; border-radius:12px; padding:15px;">
+                        <div>
+                            <strong>${latest.community}</strong>
+                            <br>
+                            <small class="text-muted">Last updated: ${new Date(latest.date).toLocaleDateString()}</small>
+                        </div>
+                        <span class="badge bg-${riskClass}">${riskLabel}</span>
+                    </div>
+                `;
+                communityStatusRow.style.display = 'block';
+            } else {
+                communityStatusRow.style.display = 'none';
+            }
+
+            // Render charts
+            renderTimelineChart();
+            renderRiskDistribution();
+        }
+
+        /*=========================================
+            RENDER 7‑DAY TIMELINE CHART
+        =========================================*/
+
+        function renderTimelineChart() {
+
+            if (timelineChart) { timelineChart.destroy(); }
+
+            const { labels, historical, predicted, dateStrings, todayIndex } = prepareDailyRiskData(allPredictions);
+
+            const ctx = document.getElementById('riskTimelineChart').getContext('2d');
+
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Historical Risk (Past 3 Days)',
+                            data: historical,
+                            borderColor: '#1f77b4',
+                            backgroundColor: 'rgba(31,119,180,0.15)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#1f77b4',
+                            borderWidth: 2.5,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Predicted Risk (Today + Next 3 Days)',
+                            data: predicted,
+                            borderColor: '#ff7f0e',
+                            backgroundColor: 'rgba(255,127,14,0.15)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ff7f0e',
+                            borderWidth: 2.5,
+                            borderDash: [5, 5],
+                            spanGaps: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { usePointStyle: true, boxWidth: 10, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(items) {
+                                    const index = items[0].dataIndex;
+                                    return dateStrings[index] || labels[index];
+                                },
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.parsed.y !== null) {
+                                        label += ': ' + context.parsed.y.toFixed(0) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                lineWarning: {
+                                    type: 'line',
+                                    yMin: 50,
+                                    yMax: 50,
+                                    borderColor: '#ffcc00',
+                                    borderWidth: 2,
+                                    borderDash: [6, 4],
+                                    label: {
+                                        content: 'Warning Threshold',
+                                        enabled: true,
+                                        position: 'start',
+                                        font: { size: 10 },
+                                        backgroundColor: 'rgba(255,204,0,0.8)'
+                                    }
+                                },
+                                lineCritical: {
+                                    type: 'line',
+                                    yMin: 80,
+                                    yMax: 80,
+                                    borderColor: '#d62728',
+                                    borderWidth: 2,
+                                    borderDash: [6, 4],
+                                    label: {
+                                        content: 'Critical Threshold',
+                                        enabled: true,
+                                        position: 'start',
+                                        font: { size: 10 },
+                                        backgroundColor: 'rgba(214,39,40,0.8)',
+                                        color: 'white'
+                                    }
+                                },
+                                todayMarker: {
+                                    type: 'line',
+                                    xMin: labels[todayIndex],
+                                    xMax: labels[todayIndex],
+                                    borderColor: 'gray',
+                                    borderWidth: 1.5,
+                                    borderDash: [4, 4],
+                                    label: {
+                                        content: 'Today',
+                                        enabled: true,
+                                        position: 'top',
+                                        font: { size: 10 },
+                                        backgroundColor: 'rgba(128,128,128,0.7)',
+                                        color: 'white'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 20, callback: v => v + '%' },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11, weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        /*=========================================
+            RENDER RISK DISTRIBUTION (Doughnut)
+        =========================================*/
+
+        function renderRiskDistribution() {
+
+            if (riskChart) { riskChart.destroy(); }
+
+            const high = allPredictions.filter(p => p.risk_level === 'HIGH').length;
+            const medium = allPredictions.filter(p => p.risk_level === 'MODERATE').length;
+            const low = allPredictions.filter(p => p.risk_level === 'LOW').length;
+
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            riskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Medium Risk', 'Safe'],
+                    datasets: [{
+                        data: [high, medium, low],
+                        backgroundColor: ['#D32F2F', '#F9A825', '#2E7D32'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'bottom' } }
+                }
+            });
+        }
+
+        /*=========================================
+            PREDICT NOW FUNCTION
+        =========================================*/
+
+        function predictNow() {
+            const btn = document.querySelector('#predictNowBtn, #predictNowBtnEmpty');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Predicting...';
+
+            const today = new Date().toISOString().split('T')[0];
+
+            fetch('/api/predict/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    community: communityName,
+                    date: today
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showToast('Error: ' + data.error, 'danger');
+                } else {
+                    showToast('Prediction complete! Risk: ' + data.risk_level + ', Confidence: ' + data.confidence + '%', 'success');
+                    refreshDashboard();
+                }
+            })
+            .catch(err => {
+                showToast('Failed to connect to server.', 'danger');
+                console.error(err);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        }
+
+        /*=========================================
+            TOAST
+        =========================================*/
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const types = {
+                success: 'toast-alert-success',
+                info: 'toast-alert-info',
+                danger: 'toast-alert-danger',
+                warning: 'toast-alert-warning'
+            };
+            toast.className = 'toast-alert ' + (types[type] || types.info);
+            toast.style.cssText = `
+                position:fixed; right:20px; top:20px; z-index:9999;
+                min-width:300px; border-radius:15px; padding:18px;
+                box-shadow:0 15px 35px rgba(0,0,0,.15);
+                animation:slideIn .5s ease;
+                background:${type === 'success' ? '#2E7D32' : type === 'danger' ? '#D32F2F' : '#1565C0'};
+                color:white;
+            `;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        /*=========================================
+            REFRESH
+        =========================================*/
+
+        function refreshDashboard() {
+            const btn = document.getElementById('refreshDashboard');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...';
+
+            fetchPredictions()
+                .then(() => {
+                    renderDashboard();
+                    showToast('Dashboard updated.', 'success');
+                })
+                .catch(err => {
+                    showToast('Failed to refresh.', 'danger');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh';
+                });
+        }
+
+        /*=========================================
+            INIT
+        =========================================*/
+
+        // Attach event listeners
+        document.getElementById('refreshDashboard').addEventListener('click', refreshDashboard);
+        document.querySelectorAll('#predictNowBtn, #predictNowBtnEmpty').forEach(btn => {
+            btn.addEventListener('click', predictNow);
+        });
+
+        // Load data
+        fetchPredictions()
+            .then(() => {
+                renderDashboard();
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.add('fade-up');
+                });
+            })
+            .catch(err => console.error('Initial load failed:', err));
+
+        // Ripple effect
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        document.querySelector('.notification-bell')?.addEventListener('click', function() {
+            const count = document.getElementById('activeAlerts').textContent;
+            alert(`You have ${count} active flood alerts for ${communityName}.`);
+        });
+
+        console.log('Community Dashboard Ready for ' + communityName);
+    });
+</script>
+
+{% endblock %}

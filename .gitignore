@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+venv*/
+*.pkl
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Backups
+backups/
+
+# Secrets
+*.env
+.idea/
+.vscode/
+
+# Logs
+alerts.log
+
+# Media & Static
+media/
+staticfiles/

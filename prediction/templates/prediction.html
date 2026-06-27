@@ -1,0 +1,1110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Flood Prediction{% endblock %}
+
+<!-- =========================================================
+       ALL PREDICTION CSS EMBEDDED HERE
+========================================================= -->
+{% block extra_css %}
+<style>
+    /*=========================================================
+        FLOODGUARD AI - PREDICTION PAGE
+    =========================================================*/
+
+    :root{
+
+        --primary:#1565C0;
+        --primary-dark:#0D47A1;
+        --primary-light:#42A5F5;
+
+        --success:#2E7D32;
+        --warning:#F9A825;
+        --danger:#D32F2F;
+        --info:#0288D1;
+
+        --light:#F5F9FF;
+        --white:#ffffff;
+        --dark:#1E293B;
+
+        --radius:18px;
+
+        --shadow:0 10px 30px rgba(0,0,0,.08);
+
+        --transition:.3s ease;
+
+    }
+
+    .page-title{
+        font-size:32px;
+        font-weight:700;
+        color:var(--dark);
+    }
+
+    .page-subtitle{
+        color:#6c757d;
+        font-size:16px;
+    }
+
+    /*=========================================================
+        CARDS
+    =========================================================*/
+
+    .card{
+        border:none;
+        border-radius:20px;
+        box-shadow:var(--shadow);
+        transition:var(--transition);
+        overflow:hidden;
+    }
+
+    .card:hover{
+        transform:translateY(-5px);
+        box-shadow:0 18px 40px rgba(0,0,0,.12);
+    }
+
+    .card-header{
+        background:#fff;
+        padding:18px 25px;
+        font-weight:600;
+        border-bottom:1px solid #edf2f7;
+    }
+
+    .card-body{
+        padding:25px;
+    }
+
+    /*=========================================================
+        FORM
+    =========================================================*/
+
+    .form-label{
+        font-weight:600;
+        color:#374151;
+    }
+
+    .form-control,
+    .form-select{
+        border-radius:12px;
+        border:1px solid #d7e3f3;
+        padding:13px 15px;
+        transition:var(--transition);
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+        border-color:var(--primary);
+        box-shadow:0 0 0 .2rem rgba(21,101,192,.15);
+    }
+
+    .form-control:hover,
+    .form-select:hover{
+        border-color:var(--primary-light);
+    }
+
+    /*=========================================================
+        BUTTON
+    =========================================================*/
+
+    .btn{
+        border-radius:12px;
+        font-weight:600;
+        position:relative;
+        overflow:hidden;
+        transition:var(--transition);
+    }
+
+    .btn-primary{
+        background:var(--primary);
+        border:none;
+        padding:14px;
+    }
+
+    .btn-primary:hover{
+        background:var(--primary-dark);
+        transform:translateY(-2px);
+    }
+
+    .btn-primary:disabled{
+        opacity:0.7;
+        cursor:not-allowed;
+    }
+
+    .btn-danger{
+        background:var(--danger);
+        border:none;
+    }
+
+    .btn-danger:hover{
+        background:#b71c1c;
+        transform:translateY(-2px);
+    }
+
+    /*=========================================================
+        RIPPLE EFFECT
+    =========================================================*/
+
+    .ripple{
+        position:absolute;
+        border-radius:50%;
+        background:rgba(255,255,255,.4);
+        transform:scale(0);
+        animation:rippleAnim .6s linear;
+        pointer-events:none;
+    }
+
+    @keyframes rippleAnim{
+        to{
+            transform:scale(4);
+            opacity:0;
+        }
+    }
+
+    /*=========================================================
+        AI STATUS
+    =========================================================*/
+
+    .ai-status{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:18px;
+    }
+
+    .ai-status:last-child{
+        margin-bottom:0;
+    }
+
+    /*=========================================================
+        RESULT SECTION
+    =========================================================*/
+
+    .result-box{
+        text-align:center;
+        padding:20px;
+    }
+
+    .result-box h2{
+        font-size:42px;
+        font-weight:700;
+    }
+
+    .result-box p{
+        margin-top:10px;
+        color:#666;
+    }
+
+    .result-detail-item{
+        display:flex;
+        justify-content:space-between;
+        padding:10px 0;
+        border-bottom:1px solid #edf2f7;
+        align-items:center;
+    }
+
+    .result-detail-item:last-child{
+        border-bottom:none;
+    }
+
+    .result-detail-item .label{
+        color:#6c757d;
+        font-weight:500;
+    }
+
+    .result-detail-item .value{
+        font-weight:600;
+        color:var(--dark);
+    }
+
+    /*=========================================================
+        RISK COLORS
+    =========================================================*/
+
+    .risk-low{ color:var(--success); }
+    .risk-medium{ color:var(--warning); }
+    .risk-high{ color:var(--danger); }
+
+    /*=========================================================
+        ALERT BOX
+    =========================================================*/
+
+    .alert{
+        border:none;
+        border-radius:15px;
+    }
+
+    .alert-info{
+        background:#E3F2FD;
+        color:#1565C0;
+    }
+
+    .alert-success{
+        background:#E8F5E9;
+        color:#2E7D32;
+    }
+
+    .alert-warning{
+        background:#FFF8E1;
+        color:#F57F17;
+    }
+
+    .alert-danger{
+        background:#FFEBEE;
+        color:#C62828;
+    }
+
+    /*=========================================================
+        BADGES
+    =========================================================*/
+
+    .badge{
+        border-radius:30px;
+        padding:8px 12px;
+        font-size:12px;
+    }
+
+    /*=========================================================
+        ANIMATION
+    =========================================================*/
+
+    .fade-up{
+        animation:fadeUp .7s ease;
+    }
+
+    @keyframes fadeUp{
+        from{
+            opacity:0;
+            transform:translateY(30px);
+        }
+        to{
+            opacity:1;
+            transform:translateY(0);
+        }
+    }
+
+    /*=========================================================
+        RESPONSIVE
+    =========================================================*/
+
+    @media(max-width:1200px){
+        .page-title{ font-size:28px; }
+    }
+
+    @media(max-width:992px){
+        .card{ margin-bottom:20px; }
+    }
+
+    @media(max-width:768px){
+        .page-title{ font-size:24px; }
+        .result-box h2{ font-size:34px; }
+        .card-body{ padding:20px; }
+    }
+
+    @media(max-width:576px){
+        .page-title{ font-size:22px; }
+        .btn{ width:100%; margin-bottom:10px; }
+    }
+
+    .btn-group .btn{
+        margin:0 5px;
+    }
+
+    /* Extra: input group shadow on focus */
+    .input-group:focus-within{
+        box-shadow:0 0 12px rgba(21,101,192,.18);
+        border-radius:12px;
+    }
+
+    .input-group:focus-within .form-control{
+        border-color:#1565C0;
+    }
+
+    .input-group:focus-within .input-group-text{
+        border-color:#1565C0;
+    }
+
+    /* Toast styles */
+    .toast-notification{
+        position:fixed;
+        top:20px;
+        right:20px;
+        z-index:9999;
+        min-width:300px;
+        border-radius:15px;
+        padding:18px 22px;
+        box-shadow:0 15px 35px rgba(0,0,0,.15);
+        animation:slideInRight .5s ease;
+        font-weight:500;
+    }
+
+    .toast-notification.success{
+        background:#E8F5E9;
+        color:#2E7D32;
+        border-left:5px solid #2E7D32;
+    }
+
+    .toast-notification.warning{
+        background:#FFF8E1;
+        color:#F57F17;
+        border-left:5px solid #F57F17;
+    }
+
+    .toast-notification.info{
+        background:#E3F2FD;
+        color:#1565C0;
+        border-left:5px solid #1565C0;
+    }
+
+    .toast-notification.danger{
+        background:#FFEBEE;
+        color:#C62828;
+        border-left:5px solid #C62828;
+    }
+
+    @keyframes slideInRight{
+        from{
+            opacity:0;
+            transform:translateX(100px);
+        }
+        to{
+            opacity:1;
+            transform:translateX(0);
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+AI Prediction
+{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+        PAGE HEADER
+=========================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">
+
+            AI Flood Prediction
+
+        </h2>
+
+        <p class="page-subtitle">
+
+            Select a community and date to generate a new AI-powered flood prediction.
+
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-lg-end">
+
+        <button class="btn btn-primary" id="resetForm">
+
+            <i class="fa-solid fa-rotate"></i>
+
+            Reset
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+        PREDICTION FORM
+=========================================== -->
+
+<div class="row">
+
+<div class="col-lg-8">
+
+<div class="card">
+
+<div class="card-header">
+
+<i class="fa-solid fa-brain text-primary me-2"></i>
+
+Prediction Parameters
+
+</div>
+
+<div class="card-body">
+
+<form id="predictionForm">
+
+<div class="row">
+
+<!-- Community - DYNAMIC FROM DATABASE -->
+<div class="col-md-6 mb-3">
+
+<label class="form-label">
+
+Community <span class="text-muted">({{ communities|length }} available)</span>
+
+</label>
+
+<select class="form-select" id="community" required>
+
+<option value="">Select Community</option>
+
+{% for community in communities %}
+
+<option value="{{ community.name }}">
+
+    {{ community.name }}
+
+</option>
+
+{% empty %}
+
+<option value="" disabled>
+
+    No communities available
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+<!-- Date - Calendar Picker -->
+<div class="col-md-6 mb-3">
+
+<label class="form-label">
+
+Prediction Date
+
+</label>
+
+<input
+type="date"
+class="form-control"
+id="predictionDate"
+value="{{ today|date:'Y-m-d' }}"
+required>
+
+</div>
+
+<!-- Submit -->
+<div class="col-12">
+
+<div class="d-grid">
+
+<button
+type="submit"
+class="btn btn-primary btn-lg"
+id="generateBtn">
+
+<i class="fa-solid fa-play"></i>
+
+Generate Prediction
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+        RIGHT PANEL - AI STATUS ONLY
+=========================================== -->
+
+<div class="col-lg-4">
+
+<!-- AI Status -->
+
+<div class="card">
+
+<div class="card-header">
+
+AI Engine Status
+
+</div>
+
+<div class="card-body">
+
+<div class="ai-status">
+
+<span>Machine Learning Model</span>
+
+<span class="badge bg-success">
+
+Online
+
+</span>
+
+</div>
+
+<div class="ai-status">
+
+<span>Prediction Accuracy</span>
+
+<strong>
+
+95%
+
+</strong>
+
+</div>
+
+<div class="ai-status">
+
+<span>Last Model Update</span>
+
+<strong>
+
+Today
+
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+        PREDICTION RESULT
+=========================================== -->
+
+<div class="card mt-4" id="resultCard" style="display:none;">
+
+<div class="card-header">
+
+<i class="fa-solid fa-chart-pie me-2"></i>
+
+Prediction Result
+
+</div>
+
+<div class="card-body">
+
+<!-- Summary Row -->
+<div class="row">
+
+<div class="col-md-4 text-center result-box">
+
+<h2 class="text-secondary" id="riskLevel">
+
+--
+
+</h2>
+
+<p>Risk Level</p>
+
+</div>
+
+<div class="col-md-4 text-center result-box">
+
+<h2 class="text-primary" id="confidenceDisplay">
+
+0%
+
+</h2>
+
+<p>Confidence</p>
+
+</div>
+
+<div class="col-md-4 text-center result-box">
+
+<h2 class="text-success" id="dateDisplay">
+
+--
+
+</h2>
+
+<p>Date</p>
+
+</div>
+
+</div>
+
+<hr>
+
+<!-- Message -->
+<div id="resultMessage" class="mb-3"></div>
+
+<!-- Detailed Parameters -->
+<div id="resultDetails">
+
+<h6 class="fw-bold mb-3"><i class="fa-solid fa-table me-2"></i>Prediction Details</h6>
+
+<div id="detailsContainer"></div>
+
+</div>
+
+<!-- Delete Button -->
+<div class="mt-3 text-center">
+
+<button class="btn btn-danger" id="deletePredictionBtn" style="display:none;">
+
+<i class="fa-solid fa-trash"></i> Delete Prediction
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ==========================================
+        ERROR / NO DATA MESSAGE
+=========================================== -->
+
+<div id="errorMessage" style="display:none;">
+
+<div class="alert alert-danger text-center mt-4">
+
+<i class="fa-solid fa-triangle-exclamation fa-2x d-block mb-3"></i>
+
+<strong id="errorTitle">Prediction Failed</strong>
+
+<br>
+
+<span id="errorText">An error occurred while generating the prediction.</span>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL PREDICTION JAVASCRIPT EMBEDDED HERE
+========================================================= -->
+{% block extra_js %}
+
+<script>
+    /*=========================================================
+        FLOODGUARD AI
+        PREDICTION PAGE
+    =========================================================*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        /*=========================================
+            PAGE FADE
+        =========================================*/
+
+        document.body.style.opacity = "0";
+        document.body.style.transition = ".5s";
+
+        setTimeout(function () {
+            document.body.style.opacity = "1";
+        }, 100);
+
+        /*=========================================
+            ELEMENTS
+        =========================================*/
+
+        const form = document.getElementById("predictionForm");
+        const communitySelect = document.getElementById("community");
+        const dateInput = document.getElementById("predictionDate");
+        const resultCard = document.getElementById("resultCard");
+        const errorMessage = document.getElementById("errorMessage");
+        const errorText = document.getElementById("errorText");
+        const errorTitle = document.getElementById("errorTitle");
+
+        const riskLevel = document.getElementById("riskLevel");
+        const confidenceDisplay = document.getElementById("confidenceDisplay");
+        const dateDisplay = document.getElementById("dateDisplay");
+        const resultMessage = document.getElementById("resultMessage");
+        const detailsContainer = document.getElementById("detailsContainer");
+
+        const generateBtn = document.getElementById("generateBtn");
+        const deleteBtn = document.getElementById("deletePredictionBtn");
+
+        let currentPredictionId = null;
+
+        /*=========================================
+            RESET BUTTON
+        =========================================*/
+
+        const resetButton = document.getElementById("resetForm");
+
+        if (resetButton) {
+
+            resetButton.addEventListener("click", function (e) {
+
+                e.preventDefault();
+
+                form.reset();
+
+                // Reset date to today
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+
+                // Hide result and error
+                resultCard.style.display = "none";
+                errorMessage.style.display = "none";
+                deleteBtn.style.display = "none";
+                currentPredictionId = null;
+
+            });
+
+        }
+
+        /*=========================================
+            GENERATE NEW PREDICTION
+        =========================================*/
+
+        form.addEventListener("submit", function (e) {
+
+            e.preventDefault();
+
+            const community = communitySelect.value;
+            const date = dateInput.value;
+
+            if (community === "") {
+                showToast("Please select a community.", "warning");
+                return;
+            }
+
+            if (date === "") {
+                showToast("Please select a date.", "warning");
+                return;
+            }
+
+            // Hide previous results
+            resultCard.style.display = "none";
+            errorMessage.style.display = "none";
+            deleteBtn.style.display = "none";
+            currentPredictionId = null;
+
+            // Disable button and show loading
+            generateBtn.disabled = true;
+            generateBtn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+
+            // Call the API to generate prediction
+            fetch('/api/predict/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    community: community,
+                    date: date
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-play"></i> Generate Prediction';
+
+                if (data.error) {
+                    errorTitle.textContent = "Prediction Failed";
+                    errorText.textContent = data.error || "An unknown error occurred.";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+
+                // Fetch the prediction ID using the community name and date
+                fetch('/api/user-predictions/')
+                    .then(res => res.json())
+                    .then(listData => {
+                        const predictions = listData.predictions || [];
+                        // Use community_name for matching
+                        const matched = predictions.find(p =>
+                            p.community_name === community &&
+                            new Date(p.date).toISOString().split('T')[0] === date
+                        );
+                        if (matched) {
+                            currentPredictionId = matched.id;
+                        }
+                        displayPrediction(data, "Prediction generated successfully using AI.");
+                        resultCard.style.display = "block";
+                        errorMessage.style.display = "none";
+                        if (currentPredictionId) {
+                            deleteBtn.style.display = "inline-block";
+                        }
+                        showToast("Prediction generated successfully!", "success");
+                    })
+                    .catch(err => {
+                        // Even if we can't fetch the ID, still display the result
+                        displayPrediction(data, "Prediction generated successfully using AI.");
+                        resultCard.style.display = "block";
+                        errorMessage.style.display = "none";
+                        showToast("Prediction generated successfully!", "success");
+                    });
+
+            })
+            .catch(error => {
+
+                console.error("Error:", error);
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-play"></i> Generate Prediction';
+
+                errorTitle.textContent = "Network Error";
+                errorText.textContent = "Could not connect to the server. Please try again.";
+                errorMessage.style.display = "block";
+
+            });
+
+        });
+
+        /*=========================================
+            DISPLAY PREDICTION RESULT
+        =========================================*/
+
+        function displayPrediction(data, message) {
+
+            // Risk Level
+            const risk = data.risk_level || "UNKNOWN";
+            const riskClass = risk === "HIGH" ? "risk-high" :
+                              risk === "MODERATE" ? "risk-medium" : "risk-low";
+            const badgeColor = risk === "HIGH" ? "danger" :
+                               risk === "MODERATE" ? "warning" : "success";
+
+            riskLevel.className = riskClass;
+            riskLevel.innerHTML = risk;
+
+            // Confidence
+            const conf = data.confidence || data.confidence_percent || 0;
+            confidenceDisplay.innerHTML = conf + "%";
+
+            // Date
+            const predDate = new Date(data.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            dateDisplay.innerHTML = predDate;
+
+            // Message
+            resultMessage.innerHTML = `
+                <div class="alert alert-${badgeColor}">
+                    <strong>${message}</strong><br>
+                    <span class="text-muted">Prediction for <strong>${data.community}</strong> on ${predDate}</span>
+                </div>
+            `;
+
+            // Details
+            const details = [
+                { label: "Community", value: data.community },
+                { label: "Date", value: predDate },
+                { label: "Risk Level", value: `<span class="badge bg-${badgeColor}">${risk}</span>` },
+                { label: "Confidence", value: `${conf}%` },
+                { label: "Rainfall", value: `${data.rainfall || data.rainfall_mm || 0} mm` },
+                { label: "Temperature", value: `${data.temperature || data.temperature_c || 0} °C` },
+                { label: "Humidity", value: `${data.humidity || data.humidity_percent || 0}%` },
+                { label: "Status", value: `<span class="badge bg-${data.flood_risk ? 'danger' : 'success'}">${data.flood_risk ? 'Flood Risk' : 'Safe'}</span>` }
+            ];
+
+            detailsContainer.innerHTML = details.map(d => `
+                <div class="result-detail-item">
+                    <span class="label">${d.label}</span>
+                    <span class="value">${d.value}</span>
+                </div>
+            `).join('');
+
+            // Scroll to result
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        }
+
+        /*=========================================
+            DELETE PREDICTION
+        =========================================*/
+
+        deleteBtn.addEventListener("click", function () {
+
+            if (!currentPredictionId) {
+                showToast("No prediction to delete.", "warning");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete this prediction? This action cannot be undone.")) {
+                return;
+            }
+
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+
+            fetch('/api/delete-prediction/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: currentPredictionId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Delete Prediction';
+
+                if (data.success) {
+                    showToast("Prediction deleted successfully.", "success");
+                    resultCard.style.display = "none";
+                    deleteBtn.style.display = "none";
+                    currentPredictionId = null;
+                } else {
+                    showToast("Failed to delete prediction: " + (data.error || "Unknown error"), "danger");
+                }
+            })
+            .catch(error => {
+                console.error("Delete error:", error);
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Delete Prediction';
+                showToast("Network error while deleting.", "danger");
+            });
+
+        });
+
+        /*=========================================
+            TOAST NOTIFICATION
+        =========================================*/
+
+        function showToast(message, type) {
+
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement("div");
+            const icons = {
+                success: "fa-check-circle",
+                warning: "fa-exclamation-triangle",
+                info: "fa-info-circle",
+                danger: "fa-times-circle"
+            };
+
+            const classes = {
+                success: "toast-notification success",
+                warning: "toast-notification warning",
+                info: "toast-notification info",
+                danger: "toast-notification danger"
+            };
+
+            toast.className = classes[type] || classes.info;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+
+            document.body.appendChild(toast);
+
+            setTimeout(function () {
+                toast.style.opacity = "0";
+                toast.style.transition = ".5s";
+                setTimeout(function () {
+                    toast.remove();
+                }, 500);
+            }, 4000);
+
+        }
+
+        /*=========================================
+            GET CSRF TOKEN
+        =========================================*/
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        /*=========================================
+            INPUT EFFECT
+        =========================================*/
+
+        document.querySelectorAll(".form-control,.form-select")
+            .forEach(function (input) {
+
+                input.addEventListener("focus", function () {
+                    this.parentElement.style.boxShadow =
+                        "0 0 12px rgba(21,101,192,.18)";
+                });
+
+                input.addEventListener("blur", function () {
+                    this.parentElement.style.boxShadow = "none";
+                });
+
+            });
+
+        /*=========================================
+            FADE ANIMATION
+        =========================================*/
+
+        document.querySelectorAll(".card")
+            .forEach(function (card) {
+                card.classList.add("fade-up");
+            });
+
+        /*=========================================
+            RIPPLE BUTTON
+        =========================================*/
+
+        document.querySelectorAll(".btn")
+            .forEach(function (button) {
+
+                button.addEventListener("click", function (e) {
+
+                    if (this.disabled) return;
+
+                    const ripple = document.createElement("span");
+                    ripple.className = "ripple";
+
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+
+                    ripple.style.width = size + "px";
+                    ripple.style.height = size + "px";
+                    ripple.style.left =
+                        (e.clientX - rect.left - size / 2) + "px";
+                    ripple.style.top =
+                        (e.clientY - rect.top - size / 2) + "px";
+
+                    this.appendChild(ripple);
+
+                    setTimeout(function () {
+                        ripple.remove();
+                    }, 600);
+
+                });
+
+            });
+
+        /*=========================================
+            CONSOLE
+        =========================================*/
+
+        console.log("FloodGuard AI Prediction Ready");
+
+    });
+</script>
+
+{% endblock %}

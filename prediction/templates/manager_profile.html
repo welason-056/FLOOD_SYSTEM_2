@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Disaster Manager Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 15px;
+        padding: 20px;
+        transition: 0.3s;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .stat-card .number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0;
+    }
+    .stat-card .label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .stat-card .icon {
+        float: right;
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+    .btn-edit {
+        border-radius: 30px;
+        padding: 8px 25px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Manager Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h2 class="fw-bold">Disaster Manager Profile</h2>
+            <p class="text-muted">
+                Manage disaster response activities, alerts, reports and community monitoring.
+            </p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{% url 'profile' %}" class="btn btn-primary btn-edit">
+                <i class="fa-solid fa-user-pen"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Card + Personal Info -->
+    <div class="row">
+
+        <!-- Left: Profile Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <img src="{% static 'images/avatar.png' %}"
+                         class="rounded-circle mb-3"
+                         width="150" height="150" style="object-fit:cover;">
+                    <h3>{{ full_name|default:username }}</h3>
+                    <p>{{ email }}</p>
+                    <span class="badge bg-warning">Disaster Manager</span>
+                    <hr>
+                    <div class="row">
+                        <div class="col-4">
+                            <h4>{{ communities_managed }}</h4>
+                            <small>Communities</small>
+                        </div>
+                        <div class="col-4">
+                            <h4>{{ alerts_issued }}</h4>
+                            <small>Alerts</small>
+                        </div>
+                        <div class="col-4">
+                            <h4>{{ reports_generated }}</h4>
+                            <small>Reports</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Personal Information -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header">
+                    <i class="fa-solid fa-address-card me-2"></i> Personal Information
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" class="form-control" value="{{ full_name|default:username }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Username</label>
+                            <input type="text" class="form-control" value="{{ username }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" value="{{ email }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="text" class="form-control" value="{{ phone }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Department</label>
+                            <input type="text" class="form-control" value="Disaster Management Department" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Role</label>
+                            <input type="text" class="form-control" value="Disaster Manager" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Assigned Region</label>
+                            <input type="text" class="form-control" value="Dar es Salaam" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Employee ID</label>
+                            <input type="text" class="form-control" value="DM{{ user.id|default:'001' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-city text-primary"></i></div>
+                <h3 class="number">{{ communities_managed }}</h3>
+                <p class="label">Communities Managed</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-triangle-exclamation text-danger"></i></div>
+                <h3 class="number">{{ alerts_issued }}</h3>
+                <p class="label">Alerts Sent</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-file-lines text-success"></i></div>
+                <h3 class="number">{{ reports_generated }}</h3>
+                <p class="label">Reports Generated</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-truck-medical text-warning"></i></div>
+                <h3 class="number">{{ emergency_responses }}</h3>
+                <p class="label">Emergency Responses</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-4 mb-2">
+            <a href="{% url 'reports' %}" class="btn btn-success w-100">
+                <i class="fa-solid fa-file-lines"></i> Reports
+            </a>
+        </div>
+        <div class="col-md-4 mb-2">
+            <a href="{% url 'history' %}" class="btn btn-info w-100">
+                <i class="fa-solid fa-clock-rotate-left"></i> History
+            </a>
+        </div>
+        <div class="col-md-4 mb-2">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary w-100">
+                <i class="fa-solid fa-gauge-high"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

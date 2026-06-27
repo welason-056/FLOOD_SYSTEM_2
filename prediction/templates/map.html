@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Flood Map{% endblock %}
+
+<!-- =========================================================
+       ALL FLOOD MAP CSS EMBEDDED HERE
+========================================================= -->
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    /* =========================================================
+           FLOODGUARD AI - FLOOD MAP STYLES
+       ========================================================= */
+
+    :root {
+        --primary: #1565C0;
+        --primary-dark: #0D47A1;
+        --primary-light: #42A5F5;
+        --success: #2E7D32;
+        --warning: #F9A825;
+        --danger: #D32F2F;
+        --info: #0288D1;
+        --light: #F5F9FF;
+        --white: #FFFFFF;
+        --dark: #1E293B;
+        --radius: 18px;
+        --shadow: 0 10px 30px rgba(0,0,0,.08);
+        --transition: .3s ease;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--dark);
+    }
+    .page-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        overflow: hidden;
+        background: #fff;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 18px 40px rgba(0,0,0,.12);
+    }
+    .card-header {
+        background: #fff;
+        border-bottom: 1px solid #edf2f7;
+        padding: 18px 22px;
+        font-weight: 600;
+    }
+    .card-body {
+        padding: 25px;
+    }
+    .card-body.p-0 {
+        padding: 0;
+    }
+
+    #map {
+        width: 100%;
+        height: 650px;
+        border-radius: 0 0 20px 20px;
+        position: relative;
+        background: #e8edf3;
+    }
+    .leaflet-container {
+        font-family: 'Poppins', sans-serif;
+        border-radius: 0 0 20px 20px;
+    }
+
+    /* No Data Overlay – shown when there are no predictions */
+    #mapNoData {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 40px 50px;
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        z-index: 1000;
+        text-align: center;
+        pointer-events: none;
+        max-width: 90%;
+    }
+    #mapNoData i {
+        font-size: 56px;
+        color: #b0bec5;
+        margin-bottom: 15px;
+    }
+    #mapNoData h4 {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+    #mapNoData p {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 15px;
+    }
+    #mapNoData .btn-link {
+        pointer-events: auto;
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+    #mapNoData .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .leaflet-popup-content {
+        font-size: 14px;
+        line-height: 1.7;
+        min-width: 200px;
+    }
+    .popup-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 10px;
+    }
+    .popup-risk {
+        font-weight: 600;
+    }
+    .popup-high { color: var(--danger); }
+    .popup-medium { color: var(--warning); }
+    .popup-low { color: var(--success); }
+
+    .leaflet-popup-content-wrapper {
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    }
+    .leaflet-popup-tip {
+        box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    }
+
+    #communityName {
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 22px;
+    }
+    .card-body p {
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #edf2f7;
+    }
+    .card-body p:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .card-body span {
+        font-weight: 600;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .legend-color {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        margin-right: 12px;
+    }
+    .legend-color.high { background: var(--danger); }
+    .legend-color.medium { background: var(--warning); }
+    .legend-color.low { background: var(--success); }
+    .legend-color.location { background: #1976D2; }
+
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+    .btn-primary {
+        background: var(--primary);
+        border: none;
+    }
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+    .btn-primary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.4);
+        transform: scale(0);
+        animation: rippleAnim .6s linear;
+        pointer-events: none;
+    }
+    @keyframes rippleAnim {
+        to { transform: scale(4); opacity: 0; }
+    }
+
+    .fade-up {
+        animation: fadeUp .7s ease;
+    }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media(max-width: 1200px) { #map { height: 600px; } }
+    @media(max-width: 992px) { #map { height: 500px; } }
+    @media(max-width: 768px) {
+        .page-title { font-size: 24px; }
+        #map { height: 420px; }
+        .card-body { padding: 20px; }
+        #mapNoData { padding: 25px 20px; width: 90%; }
+        #mapNoData i { font-size: 40px; }
+    }
+    @media(max-width: 576px) {
+        .page-title { font-size: 22px; }
+        #map { height: 350px; }
+        .btn { width: 100%; margin-bottom: 10px; }
+        .text-end { text-align: left !important; margin-top: 10px; }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}Flood Map{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+        PAGE HEADER
+========================================== -->
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h2 class="page-title">Flood Risk Map</h2>
+        <p class="page-subtitle">
+            Interactive flood monitoring map for Dar es Salaam flood-prone communities.
+        </p>
+    </div>
+    <div class="col-lg-4 text-end">
+        <button class="btn btn-primary" id="locateMe">
+            <i class="fa-solid fa-location-crosshairs"></i> My Location
+        </button>
+    </div>
+</div>
+
+<!-- ==========================================
+        MAP & SIDEBAR
+========================================== -->
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-map text-primary me-2"></i> Interactive Flood Map
+            </div>
+            <div class="card-body p-0">
+                <div id="map">
+                    <!-- No Data Overlay (hidden by default, shown via JS when no predictions) -->
+                    <div id="mapNoData" style="display:none;">
+                        <i class="fa-solid fa-database"></i>
+                        <h4>No Predictions Yet</h4>
+                        <p>
+                            Run a prediction in the
+                            <a href="{% url 'prediction' %}" class="btn-link">Prediction Center</a>
+                            to see flood risk markers on the map.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Selected Community -->
+        <div class="card mb-4">
+            <div class="card-header">Selected Community</div>
+            <div class="card-body">
+                <h4 id="communityName">Select a Marker</h4>
+                <hr>
+                <p>🌧 Rainfall <span class="float-end" id="communityRain">--</span></p>
+                <p>🌊 Water Level <span class="float-end" id="communityWater">--</span></p>
+                <p>🤖 AI Prediction <span class="float-end" id="communityRisk">--</span></p>
+                <p>🚨 Status <span class="float-end" id="communityStatus">--</span></p>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="card">
+            <div class="card-header">Map Legend</div>
+            <div class="card-body">
+                <div class="legend-item"><span class="legend-color high"></span> 🔴 High Flood Risk</div>
+                <div class="legend-item"><span class="legend-color medium"></span> 🟠 Medium Flood Risk</div>
+                <div class="legend-item"><span class="legend-color low"></span> 🟢 Safe Community</div>
+                <hr>
+                <div class="legend-item"><span class="legend-color location"></span> 📍 Your Location</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL FLOOD MAP JAVASCRIPT EMBEDDED HERE
+========================================================= -->
+{% block extra_js %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        console.log("Flood Map Loaded – waiting for predictions...");
+
+        // DOM references
+        const communityNameEl = document.getElementById('communityName');
+        const communityRainEl = document.getElementById('communityRain');
+        const communityWaterEl = document.getElementById('communityWater');
+        const communityRiskEl = document.getElementById('communityRisk');
+        const communityStatusEl = document.getElementById('communityStatus');
+        const mapNoData = document.getElementById('mapNoData');
+
+        let mapMarkers = [];
+        let map = null;
+
+        /*=========================================
+            FETCH DATA – ONLY COMMUNITIES WITH VALID PREDICTIONS
+        =========================================*/
+
+        function fetchData() {
+            return fetch('/api/user-predictions/')
+                .then(response => response.json())
+                .then(data => {
+                    const rawPredictions = data.predictions || [];
+
+                    // 🔥 KEY FIX: Filter out placeholder predictions (all zero values)
+                    // Only keep predictions with real data
+                    const predictions = rawPredictions.filter(p => {
+                        return (p.rainfall_mm || p.rainfall || 0) > 0 ||
+                               (p.temperature_c || p.temperature || 0) > 0 ||
+                               (p.confidence || p.confidence_percent || 0) > 0;
+                    });
+
+                    console.log(`✅ Loaded ${rawPredictions.length} total, filtered to ${predictions.length} valid predictions`);
+
+                    // If there are no valid predictions, return empty array early
+                    if (predictions.length === 0) {
+                        return [];
+                    }
+
+                    // Group by community, keep the latest prediction for each
+                    const latestPerCommunity = {};
+                    predictions.forEach(p => {
+                        const comm = p.community;
+                        if (!latestPerCommunity[comm] || new Date(p.date) > new Date(latestPerCommunity[comm].date)) {
+                            latestPerCommunity[comm] = p;
+                        }
+                    });
+
+                    // Fetch regions to get coordinates
+                    return fetch('/api/regions/')
+                        .then(res => res.json())
+                        .then(regionData => {
+                            const communities = regionData.communities || [];
+                            // 🔥 KEY: ONLY include communities that have a valid prediction
+                            const result = communities
+                                .filter(comm => latestPerCommunity[comm.name] !== undefined)
+                                .map(comm => {
+                                    const pred = latestPerCommunity[comm.name];
+                                    return {
+                                        name: comm.name,
+                                        lat: comm.latitude,
+                                        lng: comm.longitude,
+                                        risk: pred.risk_level || 'UNKNOWN',
+                                        rainfall: pred.rainfall_mm || pred.rainfall || 0,
+                                        water: pred.water_level || 0,
+                                        status: pred.flood_risk ? 'Active Alert' : 'Safe'
+                                    };
+                                });
+                            return result;
+                        });
+                })
+                .catch(err => {
+                    console.error('Error fetching data:', err);
+                    showToast('Failed to load map data. Please refresh.', 'danger');
+                    return [];
+                });
+        }
+
+        /*=========================================
+            RENDER MAP
+        =========================================*/
+
+        function initMap(communityList) {
+
+            // Show/hide no-data overlay
+            if (!communityList || communityList.length === 0) {
+                mapNoData.style.display = 'block';
+                // Reset sidebar
+                communityNameEl.textContent = 'No Data';
+                communityRainEl.textContent = '--';
+                communityWaterEl.textContent = '--';
+                communityRiskEl.textContent = '--';
+                communityStatusEl.textContent = '--';
+                // Remove any existing markers
+                if (map) {
+                    mapMarkers.forEach(marker => map.removeLayer(marker));
+                    mapMarkers = [];
+                }
+            } else {
+                mapNoData.style.display = 'none';
+            }
+
+            // Initialize map if not already done
+            if (!map) {
+                map = L.map("map").setView([-6.7924, 39.2083], 11);
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                        attribution: "&copy; OpenStreetMap Contributors",
+                        maxZoom: 18
+                    }
+                ).addTo(map);
+            } else {
+                // Clear existing markers
+                mapMarkers.forEach(marker => map.removeLayer(marker));
+                mapMarkers = [];
+            }
+
+            // If no communities with valid predictions, stop here – NO markers added
+            if (communityList.length === 0) {
+                return;
+            }
+
+            // Add markers for each community that HAS a valid prediction
+            communityList.forEach(place => {
+                const risk = place.risk;
+                let markerColor, riskClass;
+                if (risk === 'HIGH') {
+                    markerColor = '#D32F2F';
+                    riskClass = 'popup-high';
+                } else if (risk === 'MODERATE') {
+                    markerColor = '#F9A825';
+                    riskClass = 'popup-medium';
+                } else if (risk === 'LOW') {
+                    markerColor = '#2E7D32';
+                    riskClass = 'popup-low';
+                } else {
+                    markerColor = '#9E9E9E';
+                    riskClass = '';
+                }
+
+                const marker = L.circleMarker([place.lat, place.lng], {
+                    radius: 14,
+                    fillColor: markerColor,
+                    color: 'white',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.85
+                }).addTo(map);
+
+                const riskLabel = risk === 'HIGH' ? 'High' :
+                                  risk === 'MODERATE' ? 'Medium' :
+                                  risk === 'LOW' ? 'Low' : 'Unknown';
+
+                marker.bindPopup(`
+                    <div class="popup-title">${place.name}</div>
+                    <hr>
+                    <strong>Rainfall:</strong> ${place.rainfall} mm<br>
+                    <strong>Water Level:</strong> ${place.water} m<br>
+                    <strong>Risk:</strong> <span class="popup-risk ${riskClass}">${riskLabel}</span><br>
+                    <strong>Status:</strong> ${place.status}
+                `);
+
+                marker.on('click', function() {
+                    communityNameEl.textContent = place.name;
+                    communityRainEl.textContent = place.rainfall + ' mm';
+                    communityWaterEl.textContent = place.water + ' m';
+                    communityRiskEl.textContent = riskLabel;
+                    communityStatusEl.textContent = place.status;
+                });
+
+                mapMarkers.push(marker);
+            });
+
+            // Fit map to show all markers nicely
+            if (mapMarkers.length > 0) {
+                const group = L.featureGroup(mapMarkers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+
+            // Fade in cards
+            document.querySelectorAll('.card').forEach(card => card.classList.add('fade-up'));
+        }
+
+        /*=========================================
+            LOCATION
+        =========================================*/
+
+        function locateMe() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation is not supported by your browser.', 'warning');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const userMarker = L.circleMarker([lat, lng], {
+                        radius: 10,
+                        fillColor: '#1976D2',
+                        color: 'white',
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 1
+                    }).addTo(map);
+                    userMarker.bindPopup('📍 Your Current Location').openPopup();
+                    map.setView([lat, lng], 14);
+                },
+                function() {
+                    showToast('Unable to access your location. Please check browser permissions.', 'danger');
+                }
+            );
+        }
+
+        /*=========================================
+            TOAST
+        =========================================*/
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const types = {
+                success: 'toast-alert-success',
+                info: 'toast-alert-info',
+                danger: 'toast-alert-danger',
+                warning: 'toast-alert-warning'
+            };
+            toast.className = 'toast-alert ' + (types[type] || types.info);
+            toast.style.cssText = `
+                position:fixed; right:20px; top:20px; z-index:9999;
+                min-width:300px; border-radius:15px; padding:18px;
+                box-shadow:0 15px 35px rgba(0,0,0,.15);
+                animation:slideIn .5s ease;
+                background:#fff;
+                color:#333;
+                border-left:5px solid ${type === 'danger' ? '#D32F2F' : type === 'warning' ? '#F9A825' : '#1565C0'};
+            `;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        /*=========================================
+            INIT – LOAD AND RENDER
+        =========================================*/
+
+        fetchData().then(communityList => {
+            initMap(communityList);
+        }).catch(err => {
+            console.error('Init error:', err);
+            showToast('Failed to load map data. Please refresh.', 'danger');
+        });
+
+        // Locate me button
+        document.getElementById('locateMe').addEventListener('click', locateMe);
+
+        // Ripple effect on buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        console.log('Flood Map Ready – markers will appear only when valid predictions exist.');
+    });
+</script>
+
+{% endblock %}

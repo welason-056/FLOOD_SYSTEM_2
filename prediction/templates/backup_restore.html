@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Backup & Restore{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 15px;
+        padding: 20px;
+        transition: 0.3s;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .stat-card .number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1E293B;
+        margin: 0;
+    }
+    .stat-card .label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .stat-card .icon {
+        float: right;
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Backup & Restore
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <h2 class="fw-bold">💾 Backup & Restore</h2>
+    <p class="text-muted">Manage database backups and system recovery.</p>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-clock text-primary"></i></div>
+                <h3 class="number">{{ latest_backup }}</h3>
+                <p class="label">Latest Backup</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-database text-success"></i></div>
+                <h3 class="number">{{ backup_size }}</h3>
+                <p class="label">Backup Size</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-copy text-warning"></i></div>
+                <h3 class="number">{{ total_backups }}</h3>
+                <p class="label">Total Backups</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card bg-light">
+                <div class="icon"><i class="fa-solid fa-shield text-danger"></i></div>
+                <h3 class="number">ACTIVE</h3>
+                <p class="label">Auto Backup</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-4">
+        <button class="btn btn-primary" id="createBackupBtn">
+            <i class="fa-solid fa-plus"></i> Create Backup
+        </button>
+        <button class="btn btn-success" id="downloadBackupBtn">
+            <i class="fa-solid fa-download"></i> Download Backup
+        </button>
+        <button class="btn btn-warning" id="restoreBackupBtn">
+            <i class="fa-solid fa-rotate"></i> Restore Backup
+        </button>
+    </div>
+
+    <!-- Backup History Table -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fa-solid fa-clock-rotate-left me-2"></i> Backup History
+        </div>
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="backupTable">
+
+                    <thead>
+                        <tr>
+                            <th>Backup File</th>
+                            <th>Date</th>
+                            <th>Size</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="backupTableBody">
+                        {% for backup in backups %}
+                        <tr>
+                            <td><strong>{{ backup.filename }}</strong></td>
+                            <td>{{ backup.date }}</td>
+                            <td>{{ backup.size }}</td>
+                            <td>
+                                <a href="{% url 'download_backup' filename=backup.filename %}" class="btn btn-sm btn-success">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+
+                                <button class="btn btn-sm btn-warning restore-btn" data-file="{{ backup.filename }}">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-danger delete-btn" data-file="{{ backup.filename }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
+                                No backups available. Create one using the button above.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const createBtn = document.getElementById('createBackupBtn');
+
+        // --- Create Backup ---
+        createBtn.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+
+            fetch('/api/create-backup/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fa-solid fa-plus"></i> Create Backup';
+                if (data.success) {
+                    showToast('Backup created: ' + data.filename, 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                this.disabled = false;
+                this.innerHTML = '<i class="fa-solid fa-plus"></i> Create Backup';
+                showToast('Network error. Please try again.', 'danger');
+            });
+        });
+
+        // --- Download Backup (global button) ---
+        document.getElementById('downloadBackupBtn').addEventListener('click', function() {
+            // Find the first download link in the table
+            const firstDownload = document.querySelector('.download-btn');
+            if (firstDownload) {
+                firstDownload.click();
+            } else {
+                showToast('No backups available to download.', 'warning');
+            }
+        });
+
+        // --- Restore Backup (global button) ---
+        document.getElementById('restoreBackupBtn').addEventListener('click', function() {
+            // Find the first restore button
+            const firstRestore = document.querySelector('.restore-btn');
+            if (firstRestore) {
+                firstRestore.click();
+            } else {
+                showToast('No backups available to restore.', 'warning');
+            }
+        });
+
+        // --- Individual Restore ---
+        document.querySelectorAll('.restore-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const file = this.getAttribute('data-file');
+                if (confirm('⚠️ Restore ' + file + '? This will overwrite the current database. Are you sure?')) {
+                    const originalHtml = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    fetch('/backup/restore/' + encodeURIComponent(file) + '/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.disabled = false;
+                        this.innerHTML = originalHtml;
+                        if (data.success) {
+                            showToast('Database restored successfully from ' + file, 'success');
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                            showToast('Error: ' + data.error, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        this.disabled = false;
+                        this.innerHTML = originalHtml;
+                        showToast('Network error during restore.', 'danger');
+                    });
+                }
+            });
+        });
+
+        // --- Individual Delete ---
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const file = this.getAttribute('data-file');
+                if (confirm('Delete backup ' + file + '?')) {
+                    const originalHtml = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    fetch('/backup/delete/' + encodeURIComponent(file) + '/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.disabled = false;
+                        this.innerHTML = originalHtml;
+                        if (data.success) {
+                            showToast('Backup deleted: ' + file, 'success');
+                            // Remove row from table
+                            this.closest('tr').remove();
+                            // Update stats? We'll just reload for simplicity.
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            showToast('Error: ' + data.error, 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        this.disabled = false;
+                        this.innerHTML = originalHtml;
+                        showToast('Network error during delete.', 'danger');
+                    });
+                }
+            });
+        });
+
+        // --- Download buttons are direct hrefs, no JS needed ---
+
+        // --- Toast System ---
+        function showToast(message, type) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            const colors = {
+                success: '#2E7D32',
+                warning: '#F57F17',
+                info: '#1565C0',
+                danger: '#C62828'
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle',
+                danger: 'fa-times-circle'
+            };
+            toast.className = 'toast-notification';
+            toast.style.cssText = `
+                position:fixed; right:20px; top:20px; z-index:9999;
+                min-width:300px; border-radius:15px; padding:18px 22px;
+                box-shadow:0 15px 35px rgba(0,0,0,.15);
+                animation:slideInRight .5s ease;
+                background:${colors[type] || '#1565C0'};
+                color:white;
+                font-weight:500;
+            `;
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-info-circle'} me-2"></i> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // --- CSRF helper ---
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // --- Ripple effect ---
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.disabled) return;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        console.log('Backup & Restore Module Ready');
+    });
+</script>
+{% endblock %}

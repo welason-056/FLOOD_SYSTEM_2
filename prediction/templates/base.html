@@ -1,0 +1,1965 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        FloodGuard AI |
+        {% block title %}
+        Dashboard
+        {% endblock %}
+    </title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+          rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- =========================================================
+           ALL CSS EMBEDDED HERE (Combined layout.css)
+    ========================================================= -->
+    <style>
+        /*=========================================================
+            FLOODGUARD AI
+            Professional Dashboard Layout
+        =========================================================*/
+
+        /*=========================
+            ROOT VARIABLES
+        =========================*/
+
+        :root{
+
+            --primary:#1565C0;
+            --primary-dark:#0D47A1;
+            --primary-light:#42A5F5;
+
+            --success:#2E7D32;
+            --warning:#F9A825;
+            --danger:#D32F2F;
+            --info:#0288D1;
+
+            --white:#ffffff;
+            --light:#F4F7FC;
+            --gray:#6c757d;
+            --dark:#1E293B;
+
+            --sidebar-width:270px;
+            --navbar-height:70px;
+
+            --border-radius:15px;
+
+            --shadow-sm:0 3px 10px rgba(0,0,0,.05);
+            --shadow:0 8px 25px rgba(0,0,0,.08);
+            --shadow-lg:0 15px 40px rgba(0,0,0,.12);
+
+            --transition:.3s ease;
+
+        }
+
+        /*=========================
+            RESET
+        =========================*/
+
+        *{
+
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+
+        }
+
+        html{
+
+            scroll-behavior:smooth;
+
+        }
+
+        body{
+
+            font-family:'Poppins',sans-serif;
+            background:var(--light);
+            color:var(--dark);
+            overflow-x:hidden;
+
+        }
+
+        a{
+
+            text-decoration:none;
+            transition:var(--transition);
+
+        }
+
+        a:hover{
+
+            text-decoration:none;
+
+        }
+
+        ul{
+
+            list-style:none;
+            margin:0;
+            padding:0;
+
+        }
+
+        img{
+
+            max-width:100%;
+            display:block;
+
+        }
+
+        h1,h2,h3,h4,h5,h6{
+
+            font-weight:600;
+            color:var(--dark);
+
+        }
+
+        p{
+
+            color:#555;
+
+        }
+
+        ::selection{
+
+            background:var(--primary);
+            color:#fff;
+
+        }
+
+        ::-webkit-scrollbar{
+
+            width:10px;
+
+        }
+
+        ::-webkit-scrollbar-track{
+
+            background:#e8eef6;
+
+        }
+
+        ::-webkit-scrollbar-thumb{
+
+            background:var(--primary);
+            border-radius:20px;
+
+        }
+
+        ::-webkit-scrollbar-thumb:hover{
+
+            background:var(--primary-dark);
+
+        }
+
+        /*=========================
+            LOADING SCREEN
+        =========================*/
+
+        #loader{
+
+            position:fixed;
+
+            top:0;
+            left:0;
+
+            width:100%;
+            height:100%;
+
+            background:#fff;
+
+            display:flex;
+
+            justify-content:center;
+            align-items:center;
+
+            z-index:99999;
+
+            transition:.5s;
+
+        }
+
+        #loader.hidden{
+
+            opacity:0;
+            visibility:hidden;
+
+        }
+
+        /*=========================
+            WRAPPER
+        =========================*/
+
+        .wrapper{
+
+            display:flex;
+
+            min-height:100vh;
+
+        }
+
+        /*=========================
+            MAIN CONTENT
+        =========================*/
+
+        .main-content{
+
+            margin-left:var(--sidebar-width);
+
+            width:calc(100% - var(--sidebar-width));
+
+            min-height:100vh;
+
+            transition:var(--transition);
+
+        }
+
+        /*=========================
+            PAGE CONTAINER
+        =========================*/
+
+        .container-fluid{
+
+            padding-left:25px;
+            padding-right:25px;
+
+        }
+
+        /*=========================
+            PAGE TITLE
+        =========================*/
+
+        .page-title{
+
+            font-size:28px;
+
+            font-weight:700;
+
+            margin-bottom:20px;
+
+        }
+
+        .page-subtitle{
+
+            color:var(--gray);
+
+            margin-bottom:30px;
+
+        }
+
+        /*=========================================================
+            SIDEBAR
+        =========================================================*/
+
+        .sidebar{
+
+            position:fixed;
+
+            top:0;
+            left:0;
+
+            width:var(--sidebar-width);
+            height:100vh;
+
+            background:linear-gradient(
+                180deg,
+                #0D47A1 0%,
+                #1565C0 50%,
+                #1976D2 100%
+            );
+
+            overflow-y:auto;
+
+            box-shadow:var(--shadow-lg);
+
+            z-index:1000;
+
+            transition:var(--transition);
+
+        }
+
+        .sidebar-header{
+
+            padding:30px 25px 20px;
+
+        }
+
+        .logo{
+
+            display:flex;
+
+            align-items:center;
+
+            color:#fff;
+
+        }
+
+        .logo:hover{
+
+            color:#fff;
+
+        }
+
+        .logo-icon{
+
+            width:55px;
+            height:55px;
+
+            border-radius:15px;
+
+            background:rgba(255,255,255,.15);
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            margin-right:15px;
+
+            font-size:24px;
+
+        }
+
+        .logo-text h4{
+
+            color:#fff;
+
+            font-size:22px;
+
+            margin:0;
+
+            font-weight:700;
+
+        }
+
+        .logo-text small{
+
+            color:rgba(255,255,255,.75);
+
+        }
+
+        .sidebar-divider{
+
+            border-color:rgba(255,255,255,.15);
+
+            margin:15px 20px;
+
+        }
+
+        .sidebar-menu{
+
+            padding:10px 18px;
+
+        }
+
+        .sidebar-menu li{
+
+            margin-bottom:8px;
+
+        }
+
+        .sidebar-menu li a{
+
+            display:flex;
+
+            align-items:center;
+
+            padding:14px 18px;
+
+            color:rgba(255,255,255,.85);
+
+            border-radius:12px;
+
+            font-weight:500;
+
+            transition:var(--transition);
+
+        }
+
+        .sidebar-menu li a i{
+
+            width:25px;
+
+            font-size:18px;
+
+            margin-right:15px;
+
+            text-align:center;
+
+        }
+
+        .sidebar-menu li a span{
+
+            font-size:15px;
+
+        }
+
+        .sidebar-menu li a:hover{
+
+            background:rgba(255,255,255,.15);
+
+            color:#fff;
+
+            transform:translateX(6px);
+
+        }
+
+        .sidebar-menu li a.active{
+
+            background:#fff;
+
+            color:var(--primary);
+
+            font-weight:600;
+
+            box-shadow:var(--shadow);
+
+        }
+
+        .sidebar-menu li a.active i{
+
+            color:var(--primary);
+
+        }
+
+        .sidebar-menu .badge{
+
+            margin-left:auto;
+
+            font-size:11px;
+
+            padding:5px 8px;
+
+        }
+
+        .sidebar::-webkit-scrollbar{
+
+            width:6px;
+
+        }
+
+        .sidebar::-webkit-scrollbar-track{
+
+            background:transparent;
+
+        }
+
+        .sidebar::-webkit-scrollbar-thumb{
+
+            background:rgba(255,255,255,.30);
+
+            border-radius:20px;
+
+        }
+
+        .sidebar.collapsed{
+
+            width:85px;
+
+        }
+
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .sidebar-menu span{
+
+            display:none;
+
+        }
+
+        .sidebar.collapsed + .main-content{
+
+            margin-left:85px;
+
+            width:calc(100% - 85px);
+
+        }
+
+        /*=========================================================
+            NAVBAR
+        =========================================================*/
+
+        .navbar{
+
+            height:var(--navbar-height);
+
+            background:#fff !important;
+
+            border-bottom:1px solid #e9ecef;
+
+            box-shadow:var(--shadow-sm);
+
+            padding:0 25px;
+
+            z-index:999;
+
+        }
+
+        .navbar .container-fluid{
+
+            height:100%;
+
+        }
+
+        #menu-toggle{
+
+            width:45px;
+            height:45px;
+            border-radius:12px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+        }
+
+        .navbar-nav{
+
+            gap:12px;
+
+        }
+
+        .navbar-nav .nav-item{
+
+            display:flex;
+            align-items:center;
+
+        }
+
+        .navbar-nav .nav-link{
+
+            color:var(--dark);
+            position:relative;
+
+        }
+
+        #clock{
+
+            font-weight:600;
+            color:var(--primary);
+
+        }
+
+        #currentDate{
+
+            font-weight:600;
+
+        }
+
+        #darkModeToggle{
+
+            width:45px;
+            height:45px;
+            border-radius:50%;
+            border:none;
+            background:#f5f7fa;
+            transition:var(--transition);
+
+        }
+
+        #darkModeToggle:hover{
+
+            background:var(--primary);
+            color:#fff;
+
+        }
+
+        .dropdown-menu{
+
+            border:none;
+            border-radius:15px;
+            padding:10px 0;
+            box-shadow:var(--shadow);
+            min-width:260px;
+
+        }
+
+        .dropdown-item{
+
+            padding:12px 20px;
+            transition:var(--transition);
+
+        }
+
+        .dropdown-item:hover{
+
+            background:#f4f7fc;
+            color:var(--primary);
+
+        }
+
+        .dropdown-header{
+
+            font-weight:700;
+            color:var(--primary);
+
+        }
+
+        .navbar img{
+
+            border:3px solid #fff;
+            box-shadow:0 4px 10px rgba(0,0,0,.15);
+
+        }
+
+        .navbar .dropdown-toggle{
+
+            color:var(--dark);
+            text-decoration:none;
+
+        }
+
+        .navbar .dropdown-toggle::after{
+
+            margin-left:10px;
+
+        }
+
+        /*=========================================================
+            CONTENT CARDS
+        =========================================================*/
+
+        .card{
+
+            border:none;
+            border-radius:18px;
+            background:#fff;
+            box-shadow:var(--shadow);
+            transition:var(--transition);
+            overflow:hidden;
+
+        }
+
+        .card:hover{
+
+            transform:translateY(-6px);
+            box-shadow:var(--shadow-lg);
+
+        }
+
+        .card-header{
+
+            background:#fff;
+            border-bottom:1px solid #edf2f7;
+            padding:20px 25px;
+            font-weight:600;
+
+        }
+
+        .card-body{
+
+            padding:25px;
+
+        }
+
+        .card-footer{
+
+            background:#fff;
+            border-top:1px solid #edf2f7;
+
+        }
+
+        .stat-card{
+
+            position:relative;
+            padding:25px;
+            border-radius:18px;
+            color:#fff;
+            overflow:hidden;
+
+        }
+
+        .stat-card.primary{
+
+            background:linear-gradient(135deg,#1565C0,#42A5F5);
+
+        }
+
+        .stat-card.success{
+
+            background:linear-gradient(135deg,#2E7D32,#66BB6A);
+
+        }
+
+        .stat-card.warning{
+
+            background:linear-gradient(135deg,#F9A825,#FFD54F);
+
+        }
+
+        .stat-card.danger{
+
+            background:linear-gradient(135deg,#D32F2F,#EF5350);
+
+        }
+
+        .stat-card h2{
+
+            font-size:38px;
+            font-weight:700;
+            color:#fff;
+
+        }
+
+        .stat-card p{
+
+            color:rgba(255,255,255,.9);
+            margin-bottom:0;
+
+        }
+
+        .stat-card i{
+
+            position:absolute;
+            right:20px;
+            bottom:20px;
+            font-size:48px;
+            opacity:.25;
+
+        }
+
+        .btn{
+
+            border-radius:12px;
+            font-weight:600;
+            padding:10px 20px;
+            transition:var(--transition);
+
+        }
+
+        .btn-primary{
+
+            background:var(--primary);
+            border-color:var(--primary);
+
+        }
+
+        .btn-primary:hover{
+
+            background:var(--primary-dark);
+            border-color:var(--primary-dark);
+            transform:translateY(-2px);
+
+        }
+
+        .btn-success{
+
+            background:var(--success);
+            border-color:var(--success);
+
+        }
+
+        .btn-danger{
+
+            background:var(--danger);
+            border-color:var(--danger);
+
+        }
+
+        .btn-warning{
+
+            color:#fff;
+
+        }
+
+        .btn-outline-primary:hover{
+
+            transform:translateY(-2px);
+
+        }
+
+        .form-control,
+        .form-select{
+
+            border-radius:12px;
+            border:1px solid #dfe6ee;
+            padding:12px 15px;
+            transition:var(--transition);
+
+        }
+
+        .form-control:focus,
+        .form-select:focus{
+
+            border-color:var(--primary);
+            box-shadow:0 0 0 .25rem rgba(21,101,192,.15);
+
+        }
+
+        .form-label{
+
+            font-weight:600;
+            color:#374151;
+
+        }
+
+        .table{
+
+            border-radius:15px;
+            overflow:hidden;
+            vertical-align:middle;
+
+        }
+
+        .table thead{
+
+            background:#1565C0;
+            color:#fff;
+
+        }
+
+        .table thead th{
+
+            border:none;
+            padding:16px;
+            font-weight:600;
+
+        }
+
+        .table tbody td{
+
+            padding:15px;
+
+        }
+
+        .table tbody tr{
+
+            transition:var(--transition);
+
+        }
+
+        .table tbody tr:hover{
+
+            background:#f5f9ff;
+
+        }
+
+        .badge{
+
+            padding:8px 12px;
+            border-radius:50px;
+            font-weight:600;
+
+        }
+
+        .alert{
+
+            border:none;
+            border-radius:15px;
+            box-shadow:var(--shadow-sm);
+
+        }
+
+        .alert-primary{
+
+            background:#E3F2FD;
+            color:#1565C0;
+
+        }
+
+        .alert-success{
+
+            background:#E8F5E9;
+            color:#2E7D32;
+
+        }
+
+        .alert-warning{
+
+            background:#FFF8E1;
+            color:#F57F17;
+
+        }
+
+        .alert-danger{
+
+            background:#FFEBEE;
+            color:#C62828;
+
+        }
+
+        .progress{
+
+            height:10px;
+            border-radius:20px;
+            background:#edf2f7;
+
+        }
+
+        .progress-bar{
+
+            border-radius:20px;
+
+        }
+
+        .chart-card{
+
+            padding:20px;
+            border-radius:18px;
+            background:#fff;
+            box-shadow:var(--shadow);
+
+        }
+
+        .modal-content{
+
+            border:none;
+            border-radius:20px;
+
+        }
+
+        .modal-header{
+
+            border-bottom:1px solid #edf2f7;
+
+        }
+
+        .modal-footer{
+
+            border-top:1px solid #edf2f7;
+
+        }
+
+        .pagination .page-link{
+
+            border:none;
+            margin:0 4px;
+            border-radius:10px;
+            color:var(--primary);
+
+        }
+
+        .pagination .page-item.active .page-link{
+
+            background:var(--primary);
+            border-color:var(--primary);
+
+        }
+
+        /*=========================================================
+            ANIMATIONS
+        =========================================================*/
+
+        .fade-up{
+
+            animation:fadeUp .7s ease;
+
+        }
+
+        .fade-in{
+
+            animation:fadeIn .6s ease;
+
+        }
+
+        .zoom-in{
+
+            animation:zoomIn .4s ease;
+
+        }
+
+        .slide-left{
+
+            animation:slideLeft .5s ease;
+
+        }
+
+        @keyframes fadeUp{
+
+            from{
+
+                opacity:0;
+                transform:translateY(25px);
+
+            }
+
+            to{
+
+                opacity:1;
+                transform:translateY(0);
+
+            }
+
+        }
+
+        @keyframes fadeIn{
+
+            from{
+
+                opacity:0;
+
+            }
+
+            to{
+
+                opacity:1;
+
+            }
+
+        }
+
+        @keyframes zoomIn{
+
+            from{
+
+                opacity:0;
+                transform:scale(.9);
+
+            }
+
+            to{
+
+                opacity:1;
+                transform:scale(1);
+
+            }
+
+        }
+
+        @keyframes slideLeft{
+
+            from{
+
+                opacity:0;
+                transform:translateX(25px);
+
+            }
+
+            to{
+
+                opacity:1;
+                transform:translateX(0);
+
+            }
+
+        }
+
+        /*=========================================================
+            DARK MODE
+        =========================================================*/
+
+        body.dark-mode{
+
+            background:#0f172a;
+            color:#f8fafc;
+
+        }
+
+        body.dark-mode .card,
+        body.dark-mode .navbar,
+        body.dark-mode .breadcrumb{
+
+            background:#1e293b !important;
+            color:#fff;
+
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode h5,
+        body.dark-mode h6{
+
+            color:#fff;
+
+        }
+
+        body.dark-mode p,
+        body.dark-mode td,
+        body.dark-mode th,
+        body.dark-mode label{
+
+            color:#e2e8f0;
+
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select{
+
+            background:#334155;
+            border-color:#475569;
+            color:#fff;
+
+        }
+
+        body.dark-mode .table tbody tr:hover{
+
+            background:#273449;
+
+        }
+
+        /*=========================================================
+            UTILITIES
+        =========================================================*/
+
+        .shadow-card{
+
+            box-shadow:var(--shadow);
+
+        }
+
+        .rounded-xl{
+
+            border-radius:20px;
+
+        }
+
+        .cursor-pointer{
+
+            cursor:pointer;
+
+        }
+
+        .text-primary{
+
+            color:var(--primary)!important;
+
+        }
+
+        .bg-light-blue{
+
+            background:#eef6ff;
+
+        }
+
+        .min-vh-100{
+
+            min-height:100vh;
+
+        }
+
+        /*=========================================================
+            RESPONSIVE
+        =========================================================*/
+
+        @media (max-width:1200px){
+
+            .container-fluid{
+
+                padding-left:20px;
+                padding-right:20px;
+
+            }
+
+        }
+
+        @media (max-width:992px){
+
+            .sidebar{
+
+                left:-100%;
+                width:280px;
+
+            }
+
+            .sidebar.show{
+
+                left:0;
+
+            }
+
+            .main-content{
+
+                margin-left:0;
+                width:100%;
+
+            }
+
+            .navbar{
+
+                padding:0 15px;
+
+            }
+
+        }
+
+        @media (max-width:768px){
+
+            #clock,
+            #currentDate{
+
+                display:none;
+
+            }
+
+            .page-title{
+
+                font-size:24px;
+
+            }
+
+            .card{
+
+                margin-bottom:20px;
+
+            }
+
+            .table-responsive{
+
+                border-radius:15px;
+
+            }
+
+        }
+
+        @media (max-width:576px){
+
+            .container-fluid{
+
+                padding-left:15px;
+                padding-right:15px;
+
+            }
+
+            .page-title{
+
+                font-size:22px;
+
+            }
+
+            .btn{
+
+                width:100%;
+                margin-bottom:10px;
+
+            }
+
+            #backToTop{
+
+                right:15px;
+                bottom:15px;
+
+            }
+
+        }
+
+        /*=========================================================
+            END OF ALL CSS
+        =========================================================*/
+    </style>
+
+    <!-- Page-specific extra CSS -->
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+    <!-- ===========================
+         Loading Screen
+    =========================== -->
+
+    <div id="loader">
+
+        <div class="spinner-border text-primary"
+             role="status">
+
+            <span class="visually-hidden">
+                Loading...
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+         Wrapper
+    =========================== -->
+
+    <div class="wrapper">
+
+        <!-- ==========================================
+             SIDEBAR (Embedded)
+        =========================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Logo -->
+
+            <div class="sidebar-header">
+
+                <a href="{% url 'dashboard' %}" class="logo">
+
+                    <div class="logo-icon">
+
+                        <i class="fa-solid fa-water"></i>
+
+                    </div>
+
+                    <div class="logo-text">
+
+                        <h4>FloodGuard AI</h4>
+
+                        <small>Dar es Salaam</small>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+            <!-- Divider -->
+
+            <hr class="sidebar-divider">
+
+            <!-- ==========================================
+                 NAVIGATION – ROLE‑BASED MENU
+            =========================================== -->
+
+            <ul class="sidebar-menu">
+
+                <!-- ========================================
+                     SYSTEM ADMIN (Superuser)
+                ======================================== -->
+                {% if request.user.is_superuser %}
+                <li>
+                    <a href="{% url 'dashboard' %}"
+                       class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'prediction' %}"
+                       class="{% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Predictions</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'alerts' %}"
+                       class="{% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Alerts</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'map' %}"
+                       class="{% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>Flood Map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'reports' %}"
+                       class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'history' %}"
+                       class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'settings' %}"
+                       class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'system_logs' %}"
+                       class="{% if request.resolver_match.url_name == 'system_logs' %}active{% endif %}">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>System Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'backup_restore' %}"
+                       class="{% if request.resolver_match.url_name == 'backup_restore' %}active{% endif %}">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Backup & Restore</span>
+                    </a>
+                </li>
+
+                <!-- ========================================
+                     DISASTER MANAGER (Staff, not superuser)
+                ======================================== -->
+                {% elif request.user.is_staff %}
+                <li>
+                    <a href="{% url 'disaster_manager_dashboard' %}"
+                       class="{% if request.resolver_match.url_name == 'disaster_manager_dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <span>Manager Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'prediction' %}"
+                       class="{% if request.resolver_match.url_name == 'prediction' %}active{% endif %}">
+                        <i class="fa-solid fa-brain"></i>
+                        <span>Prediction</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'alerts' %}"
+                       class="{% if request.resolver_match.url_name == 'alerts' %}active{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Alerts</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'map' %}"
+                       class="{% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>Flood Map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'reports' %}"
+                       class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'history' %}"
+                       class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>History</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'emergency' %}"
+                       class="{% if request.resolver_match.url_name == 'emergency' %}active{% endif %}">
+                        <i class="fa-solid fa-truck-medical"></i>
+                        <span>Emergency</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'manager_profile' %}"
+                       class="{% if request.resolver_match.url_name == 'manager_profile' %}active{% endif %}">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>My Profile</span>
+                    </a>
+                </li>
+
+                <!-- ========================================
+                     COMMUNITY MEMBER (Regular user)
+                ======================================== -->
+                {% else %}
+                <li>
+                    <a href="{% url 'community_dashboard' %}"
+                       class="{% if request.resolver_match.url_name == 'community_dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-house-chimney"></i>
+                        <span>Community Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'flood_prediction' %}"
+                       class="{% if request.resolver_match.url_name == 'flood_prediction' %}active{% endif %}">
+                        <i class="fa-solid fa-cloud-sun-rain"></i>
+                        <span>Flood Prediction</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'my_alerts' %}"
+                       class="{% if request.resolver_match.url_name == 'my_alerts' %}active{% endif %}">
+                        <i class="fa-solid fa-bell"></i>
+                        <span>My Alerts</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'map' %}"
+                       class="{% if request.resolver_match.url_name == 'map' %}active{% endif %}">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <span>Flood Map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'emergency' %}"
+                       class="{% if request.resolver_match.url_name == 'emergency' %}active{% endif %}">
+                        <i class="fa-solid fa-truck-medical"></i>
+                        <span>Emergency</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'profile' %}"
+                       class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+                {% endif %}
+
+            </ul>
+
+        </aside>
+
+        <!-- ===========================
+             Main Content
+        =========================== -->
+
+        <div class="main-content">
+
+            <!-- ==========================================
+                 TOP NAVIGATION BAR (Embedded)
+            =========================================== -->
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 sticky-top">
+
+                <div class="container-fluid">
+
+                    <!-- Mobile Sidebar Toggle -->
+
+                    <button class="btn btn-primary d-lg-none me-3"
+                            id="menu-toggle">
+
+                        <i class="fa-solid fa-bars"></i>
+
+                    </button>
+
+                    <!-- Right Menu -->
+
+                    <ul class="navbar-nav ms-auto align-items-center">
+
+                        <!-- Current Date -->
+
+                        <li class="nav-item me-4 d-none d-lg-block">
+
+                            <div class="text-end">
+
+                                <small class="text-muted">
+
+                                    Today
+
+                                </small>
+
+                                <br>
+
+                                <strong id="currentDate">
+
+                                    Loading...
+
+                                </strong>
+
+                            </div>
+
+                        </li>
+
+                        <!-- Clock -->
+
+                        <li class="nav-item me-4 d-none d-lg-block">
+
+                            <div class="text-end">
+
+                                <small class="text-muted">
+
+                                    Time
+
+                                </small>
+
+                                <br>
+
+                                <strong id="clock">
+
+                                    00:00:00
+
+                                </strong>
+
+                            </div>
+
+                        </li>
+
+                        <!-- Dark Mode -->
+
+                        <li class="nav-item me-3">
+
+                            <button
+                                class="btn btn-light rounded-circle"
+                                id="darkModeToggle">
+
+                                <i class="fa-solid fa-moon"></i>
+
+                            </button>
+
+                        </li>
+
+                        <!-- User Profile Dropdown (only Logout now) -->
+
+                        <li class="nav-item dropdown">
+
+                            <a
+                                class="nav-link dropdown-toggle d-flex align-items-center"
+
+                                href="#"
+
+                                data-bs-toggle="dropdown">
+
+                                <img
+                                    src="{% static 'images/avatar.png' %}"
+                                    width="42"
+                                    height="42"
+                                    class="rounded-circle me-2"
+                                    alt="User">
+
+                                <div class="d-none d-lg-block">
+
+                                    <strong>
+
+                                        {{ request.user.username }}
+
+                                    </strong>
+
+                                    <br>
+
+                                    <small class="text-muted">
+
+                                        {% if request.user.is_superuser %}
+                                            System Administrator
+                                        {% elif request.user.is_staff %}
+                                            Disaster Manager
+                                        {% else %}
+                                            Community Member
+                                        {% endif %}
+
+                                    </small>
+
+                                </div>
+
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+
+                                <li>
+
+                                    <a
+                                        class="dropdown-item text-danger"
+
+                                        href="{% url 'logout' %}">
+
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i>
+
+                                        Logout
+
+                                    </a>
+
+                                </li>
+
+                            </ul>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </nav>
+
+            <!-- ===========================
+                 Main Container
+            =========================== -->
+
+            <div class="container-fluid pb-5">
+
+                {% block content %}
+                {% endblock %}
+
+            </div>
+
+            <!-- ==========================================
+                 BACK TO TOP BUTTON
+            =========================================== -->
+
+            <button
+                    id="backToTop"
+
+                    class="btn btn-primary rounded-circle shadow">
+
+                <i class="fa-solid fa-arrow-up"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ===========================
+         Bootstrap JS
+    =========================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- ===========================
+         Layout JS (Embedded)
+    =========================== -->
+
+    <script>
+        // ==========================================
+        // LOADING SCREEN
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const loader = document.getElementById('loader');
+
+            setTimeout(function() {
+
+                loader.classList.add('hidden');
+
+            }, 800);
+
+        });
+
+        // ==========================================
+        // SIDEBAR TOGGLE (Mobile)
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+
+            if (menuToggle) {
+
+                menuToggle.addEventListener('click', function() {
+
+                    sidebar.classList.toggle('show');
+
+                });
+
+            }
+
+        });
+
+        // ==========================================
+        // CLOCK
+        // ==========================================
+
+        function updateClock() {
+
+            const now = new Date();
+
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+
+            const clockElement = document.getElementById('clock');
+
+            if (clockElement) {
+
+                clockElement.textContent = hours + ':' + minutes + ':' + seconds;
+
+            }
+
+        }
+
+        // ==========================================
+        // CURRENT DATE
+        // ==========================================
+
+        function updateDate() {
+
+            const now = new Date();
+
+            const options = {
+
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+
+            };
+
+            const dateElement = document.getElementById('currentDate');
+
+            if (dateElement) {
+
+                dateElement.textContent = now.toLocaleDateString('en-US', options);
+
+            }
+
+        }
+
+        // ==========================================
+        // COPYRIGHT YEAR
+        // ==========================================
+
+        function updateCopyrightYear() {
+
+            const yearElement = document.getElementById('copyrightYear');
+
+            if (yearElement) {
+
+                yearElement.textContent = new Date().getFullYear();
+
+            }
+
+        }
+
+        // ==========================================
+        // DARK MODE
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            // Check saved preference
+
+            if (localStorage.getItem('darkMode') === 'enabled') {
+
+                body.classList.add('dark-mode');
+
+                if (darkModeToggle) {
+
+                    darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+
+                }
+
+            }
+
+            if (darkModeToggle) {
+
+                darkModeToggle.addEventListener('click', function() {
+
+                    body.classList.toggle('dark-mode');
+
+                    if (body.classList.contains('dark-mode')) {
+
+                        localStorage.setItem('darkMode', 'enabled');
+
+                        darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+
+                    } else {
+
+                        localStorage.setItem('darkMode', 'disabled');
+
+                        darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+
+                    }
+
+                });
+
+            }
+
+        });
+
+        // ==========================================
+        // BACK TO TOP BUTTON
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const backToTopBtn = document.getElementById('backToTop');
+
+            window.addEventListener('scroll', function() {
+
+                if (window.scrollY > 300) {
+
+                    backToTopBtn.style.display = 'flex';
+
+                } else {
+
+                    backToTopBtn.style.display = 'none';
+
+                }
+
+            });
+
+            if (backToTopBtn) {
+
+                backToTopBtn.addEventListener('click', function() {
+
+                    window.scrollTo({
+
+                        top: 0,
+                        behavior: 'smooth'
+
+                    });
+
+                });
+
+            }
+
+        });
+
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+
+        updateClock();
+        updateDate();
+        updateCopyrightYear();
+
+        // Update clock every second
+
+        setInterval(updateClock, 1000);
+
+        // ==========================================
+        // SIDEBAR COLLAPSE (Desktop)
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const sidebar = document.getElementById('sidebar');
+
+            // Double-click on logo to collapse/expand sidebar (optional)
+
+            const logo = document.querySelector('.logo');
+
+            if (logo && window.innerWidth > 992) {
+
+                logo.addEventListener('dblclick', function(e) {
+
+                    e.preventDefault();
+
+                    sidebar.classList.toggle('collapsed');
+
+                });
+
+            }
+
+        });
+
+        // Close sidebar when clicking outside on mobile
+
+        document.addEventListener('click', function(event) {
+
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+
+            if (window.innerWidth <= 992) {
+
+                if (sidebar && sidebar.classList.contains('show')) {
+
+                    if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+
+                        sidebar.classList.remove('show');
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+    <!-- Page-specific extra JS -->
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+</html>

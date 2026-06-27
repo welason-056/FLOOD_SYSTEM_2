@@ -1,0 +1,1373 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+<!-- =========================================================
+       ALL SETTINGS CSS EMBEDDED HERE
+========================================================= -->
+{% block extra_css %}
+<style>
+    /*=========================================================
+        FLOODGUARD AI - SETTINGS PAGE
+    =========================================================*/
+
+    :root{
+
+        --primary:#1565C0;
+        --primary-dark:#0D47A1;
+        --primary-light:#42A5F5;
+
+        --success:#2E7D32;
+        --warning:#F9A825;
+        --danger:#D32F2F;
+        --info:#0288D1;
+
+        --light:#F5F9FF;
+        --white:#FFFFFF;
+        --dark:#1E293B;
+        --gray:#6C757D;
+
+        --radius:18px;
+        --shadow:0 10px 30px rgba(0,0,0,.08);
+
+        --transition:.3s ease;
+
+    }
+
+    /*=========================================================
+        BODY
+    =========================================================*/
+
+    body{
+
+        background:var(--light);
+
+        font-family:'Poppins',sans-serif;
+
+    }
+
+    /*=========================================================
+        PAGE TITLE
+    =========================================================*/
+
+    .page-title{
+
+        font-size:32px;
+
+        font-weight:700;
+
+        color:var(--dark);
+
+    }
+
+    .page-subtitle{
+
+        color:var(--gray);
+
+        font-size:16px;
+
+    }
+
+    /*=========================================================
+        CARD
+    =========================================================*/
+
+    .card{
+
+        border:none;
+
+        border-radius:20px;
+
+        box-shadow:var(--shadow);
+
+        transition:var(--transition);
+
+        overflow:hidden;
+
+    }
+
+    .card:hover{
+
+        transform:translateY(-5px);
+
+        box-shadow:0 20px 40px rgba(0,0,0,.12);
+
+    }
+
+    .card-header{
+
+        background:#fff;
+
+        border-bottom:1px solid #edf2f7;
+
+        padding:18px 22px;
+
+        font-weight:600;
+
+    }
+
+    .card-body{
+
+        padding:30px;
+
+    }
+
+    /*=========================================================
+        PROFILE IMAGE
+    =========================================================*/
+
+    .rounded-circle{
+
+        border:6px solid #E3F2FD;
+
+        object-fit:cover;
+
+        transition:.3s;
+
+    }
+
+    .rounded-circle:hover{
+
+        transform:scale(1.05);
+
+    }
+
+    /*=========================================================
+        FORM
+    =========================================================*/
+
+    .form-label{
+
+        font-weight:600;
+
+        color:#374151;
+
+    }
+
+    .form-control,
+
+    .form-select{
+
+        border-radius:12px;
+
+        border:1px solid #D9E4F5;
+
+        padding:12px 15px;
+
+        transition:.3s;
+
+    }
+
+    .form-control:focus,
+
+    .form-select:focus{
+
+        border-color:var(--primary);
+
+        box-shadow:0 0 0 .2rem rgba(21,101,192,.15);
+
+    }
+
+    .form-control[readonly]{
+        background:#f1f3f5;
+        cursor:not-allowed;
+    }
+
+    /*=========================================================
+        RANGE SLIDER
+    =========================================================*/
+
+    .form-range{
+
+        cursor:pointer;
+
+    }
+
+    .form-range::-webkit-slider-thumb{
+
+        background:var(--primary);
+
+    }
+
+    .form-range::-moz-range-thumb{
+
+        background:var(--primary);
+
+    }
+
+    .slider-value{
+        font-size:18px;
+        font-weight:700;
+    }
+
+    /*=========================================================
+        SWITCHES
+    =========================================================*/
+
+    .form-check{
+
+        padding:12px 0;
+
+    }
+
+    .form-check-input{
+
+        width:50px;
+
+        height:25px;
+
+        cursor:pointer;
+
+    }
+
+    .form-check-input:checked{
+
+        background-color:var(--primary);
+
+        border-color:var(--primary);
+
+    }
+
+    .form-check-label{
+
+        margin-left:10px;
+
+        font-weight:500;
+
+    }
+
+    /*=========================================================
+        BUTTONS
+    =========================================================*/
+
+    .btn{
+
+        border-radius:12px;
+
+        font-weight:600;
+
+        transition:.3s;
+
+        position:relative;
+        overflow:hidden;
+
+    }
+
+    .btn-primary{
+
+        background:var(--primary);
+
+        border:none;
+
+    }
+
+    .btn-primary:hover{
+
+        background:var(--primary-dark);
+
+        transform:translateY(-2px);
+
+    }
+
+    .btn-primary:disabled{
+        opacity:0.7;
+        cursor:not-allowed;
+    }
+
+    .btn-outline-primary{
+
+        border-radius:12px;
+
+    }
+
+    .btn-outline-primary:hover{
+        transform:translateY(-2px);
+    }
+
+    /*=========================================================
+        RIPPLE EFFECT
+    =========================================================*/
+
+    .ripple{
+        position:absolute;
+        border-radius:50%;
+        background:rgba(255,255,255,.4);
+        transform:scale(0);
+        animation:rippleAnim .6s linear;
+        pointer-events:none;
+    }
+
+    @keyframes rippleAnim{
+        to{
+            transform:scale(4);
+            opacity:0;
+        }
+    }
+
+    /*=========================================================
+        TABLE
+    =========================================================*/
+
+    .table{
+
+        vertical-align:middle;
+
+    }
+
+    .table th{
+
+        width:220px;
+
+        color:var(--dark);
+
+    }
+
+    .table td{
+
+        color:#555;
+
+    }
+
+    .table tr{
+        border-bottom:1px solid #edf2f7;
+    }
+
+    .table tr:last-child{
+        border-bottom:none;
+    }
+
+    /*=========================================================
+        BADGES
+    =========================================================*/
+
+    .badge{
+
+        border-radius:30px;
+
+        padding:8px 14px;
+
+    }
+
+    /*=========================================================
+        ALERTS / TOAST
+    =========================================================*/
+
+    .alert{
+
+        border:none;
+
+        border-radius:15px;
+
+    }
+
+    .toast-notification{
+        position:fixed;
+        top:20px;
+        right:20px;
+        z-index:9999;
+        min-width:300px;
+        border-radius:15px;
+        padding:18px 22px;
+        box-shadow:0 15px 35px rgba(0,0,0,.15);
+        animation:slideInRight .5s ease;
+        font-weight:500;
+    }
+
+    .toast-notification.success{
+        background:#E8F5E9;
+        color:#2E7D32;
+        border-left:5px solid #2E7D32;
+    }
+
+    .toast-notification.warning{
+        background:#FFF8E1;
+        color:#F57F17;
+        border-left:5px solid #F57F17;
+    }
+
+    .toast-notification.info{
+        background:#E3F2FD;
+        color:#1565C0;
+        border-left:5px solid #1565C0;
+    }
+
+    .toast-notification.danger{
+        background:#FFEBEE;
+        color:#C62828;
+        border-left:5px solid #C62828;
+    }
+
+    @keyframes slideInRight{
+        from{
+            opacity:0;
+            transform:translateX(100px);
+        }
+        to{
+            opacity:1;
+            transform:translateX(0);
+        }
+    }
+
+    /*=========================================================
+        ANIMATION
+    =========================================================*/
+
+    .fade-up{
+
+        animation:fadeUp .8s ease;
+
+    }
+
+    @keyframes fadeUp{
+
+        from{
+
+            opacity:0;
+
+            transform:translateY(25px);
+
+        }
+
+        to{
+
+            opacity:1;
+
+            transform:translateY(0);
+
+        }
+
+    }
+
+    /*=========================================================
+        SECTION SPACING
+    =========================================================*/
+
+    .card + .card{
+
+        margin-top:25px;
+
+    }
+
+    /*=========================================================
+        RESPONSIVE
+    =========================================================*/
+
+    @media(max-width:1200px){
+
+        .page-title{
+
+            font-size:28px;
+
+        }
+
+    }
+
+    @media(max-width:992px){
+
+        .card{
+
+            margin-bottom:20px;
+
+        }
+
+        .text-end{
+            text-align:left !important;
+            margin-top:15px;
+        }
+
+    }
+
+    @media(max-width:768px){
+
+        .page-title{
+
+            font-size:24px;
+
+        }
+
+        .card-body{
+
+            padding:20px;
+
+        }
+
+        .rounded-circle{
+
+            width:120px;
+
+            height:120px;
+
+        }
+
+    }
+
+    @media(max-width:576px){
+
+        .page-title{
+
+            font-size:22px;
+
+        }
+
+        .btn{
+
+            width:100%;
+
+            margin-bottom:10px;
+
+        }
+
+        .table th{
+
+            width:120px;
+
+        }
+
+        .toast-notification{
+            min-width:auto;
+            width:90%;
+            right:5%;
+            top:10px;
+        }
+
+    }
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+Settings
+{% endblock %}
+
+{% block content %}
+
+<!-- ==========================================
+            PAGE HEADER
+========================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-lg-8">
+
+        <h2 class="page-title">
+
+            System Settings
+
+        </h2>
+
+        <p class="page-subtitle">
+
+            Manage your FloodGuard AI account, preferences,
+            notifications and security.
+
+        </p>
+
+    </div>
+
+    <div class="col-lg-4 text-end">
+
+        <button
+            class="btn btn-primary"
+            id="saveSettings">
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Save Changes
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            PROFILE SETTINGS
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+
+        <i class="fa-solid fa-user me-2 text-primary"></i>
+
+        User Profile
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-3 text-center">
+
+                <img
+                    src="{% static 'images/avatar.png' %}"
+                    class="img-fluid rounded-circle mb-3"
+                    width="150"
+                    height="150"
+                    alt="Profile">
+
+                <button class="btn btn-outline-primary" id="changePhotoBtn">
+
+                    Change Photo
+
+                </button>
+
+            </div>
+
+            <div class="col-md-9">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Full Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="fullName"
+                            value="{{ request.user.get_full_name }}">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Username
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ request.user.username }}"
+                            readonly>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Email
+
+                        </label>
+
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="userEmail"
+                            value="{{ request.user.email }}">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Phone Number
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="userPhone"
+                            placeholder="+255 XXX XXX XXX"
+                            value="{{ request.user.profile.phone|default:'' }}">
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Community
+
+                        </label>
+
+                        <select class="form-select" id="userCommunity">
+
+                            {% for community in communities %}
+                            <option value="{{ community.name }}"
+                                {% if request.user.community.name == community.name %}selected{% endif %}>
+                                {{ community.name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Role
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="Community User"
+                            readonly>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            CHANGE PASSWORD
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+
+        <i class="fa-solid fa-lock me-2 text-danger"></i>
+
+        Security
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-4 mb-3 mb-md-0">
+
+                <label class="form-label">
+
+                    Current Password
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control"
+                    id="currentPassword"
+                    placeholder="Enter current password">
+
+            </div>
+
+            <div class="col-md-4 mb-3 mb-md-0">
+
+                <label class="form-label">
+
+                    New Password
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control"
+                    id="newPassword"
+                    placeholder="Enter new password">
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label class="form-label">
+
+                    Confirm Password
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control"
+                    id="confirmPassword"
+                    placeholder="Confirm new password">
+
+            </div>
+
+        </div>
+
+        <div id="passwordMatchMsg" class="mt-2" style="display:none;"></div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            NOTIFICATIONS
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+
+        <i class="fa-solid fa-bell me-2 text-warning"></i>
+
+        Notifications
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="form-check form-switch mb-3">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="emailNotif"
+                checked>
+
+            <label class="form-check-label" for="emailNotif">
+
+                Email Notifications
+
+            </label>
+
+        </div>
+
+        <div class="form-check form-switch mb-3">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="smsNotif"
+                checked>
+
+            <label class="form-check-label" for="smsNotif">
+
+                SMS Notifications
+
+            </label>
+
+        </div>
+
+        <div class="form-check form-switch mb-3">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="pushNotif"
+                checked>
+
+            <label class="form-check-label" for="pushNotif">
+
+                Push Notifications
+
+            </label>
+
+        </div>
+
+        <div class="form-check form-switch">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="weeklyReports">
+
+            <label class="form-check-label" for="weeklyReports">
+
+                Weekly Reports
+
+            </label>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            AI SETTINGS
+========================================== -->
+
+<div class="card mb-4">
+
+    <div class="card-header">
+
+        <i class="fa-solid fa-brain me-2 text-primary"></i>
+
+        AI Prediction Settings
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="mb-3">
+
+            <label class="form-label">
+
+                Prediction Confidence Threshold
+
+            </label>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <input
+                    type="range"
+                    class="form-range flex-grow-1"
+                    id="confidenceSlider"
+                    min="50"
+                    max="100"
+                    value="90">
+
+                <span class="slider-value text-primary" id="sliderValue">90%</span>
+
+            </div>
+
+        </div>
+
+        <div class="form-check form-switch mb-3">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="autoPrediction"
+                checked>
+
+            <label class="form-check-label" for="autoPrediction">
+
+                Enable Automatic Prediction
+
+            </label>
+
+        </div>
+
+        <div class="form-check form-switch">
+
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="autoRefresh"
+                checked>
+
+            <label class="form-check-label" for="autoRefresh">
+
+                Auto Refresh Dashboard
+
+            </label>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+            SYSTEM INFORMATION
+========================================== -->
+
+<div class="card">
+
+    <div class="card-header">
+
+        <i class="fa-solid fa-circle-info me-2 text-success"></i>
+
+        System Information
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table">
+
+            <tbody>
+
+                <tr>
+
+                    <th>Application</th>
+
+                    <td>FloodGuard AI</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Version</th>
+
+                    <td>Version 1.0</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Machine Learning</th>
+
+                    <td>Random Forest Classifier</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Framework</th>
+
+                    <td>Django</td>
+
+                </tr>
+
+                <tr>
+
+                    <th>Database</th>
+
+                    <td>SQLite</td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+<!-- =========================================================
+       ALL SETTINGS JAVASCRIPT EMBEDDED HERE
+========================================================= -->
+{% block extra_js %}
+
+<script>
+    /*=========================================================
+        FLOODGUARD AI - SETTINGS PAGE
+    =========================================================*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        console.log("Settings Module Loaded");
+
+        /*=========================================
+            PAGE FADE-IN
+        =========================================*/
+
+        document.body.style.opacity = "0";
+        document.body.style.transition = ".5s";
+
+        setTimeout(function () {
+
+            document.body.style.opacity = "1";
+
+        }, 100);
+
+        /*=========================================
+            SAVE SETTINGS
+        =========================================*/
+
+        const saveButton = document.getElementById("saveSettings");
+
+        if (saveButton) {
+
+            saveButton.addEventListener("click", function () {
+
+                this.disabled = true;
+
+                this.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+                // Simulate saving
+                setTimeout(() => {
+
+                    this.disabled = false;
+
+                    this.innerHTML =
+                        '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+
+                    showToast(
+                        "Settings saved successfully.",
+                        "success"
+                    );
+
+                }, 2000);
+
+            });
+
+        }
+
+        /*=========================================
+            PASSWORD VALIDATION
+        =========================================*/
+
+        const newPassword = document.getElementById("newPassword");
+        const confirmPassword = document.getElementById("confirmPassword");
+        const passwordMatchMsg = document.getElementById("passwordMatchMsg");
+
+        function validatePassword() {
+
+            if (!newPassword.value && !confirmPassword.value) {
+                passwordMatchMsg.style.display = "none";
+                return;
+            }
+
+            if (confirmPassword.value === "") {
+                passwordMatchMsg.style.display = "none";
+                return;
+            }
+
+            if (confirmPassword.value !== newPassword.value) {
+
+                confirmPassword.style.borderColor = "#D32F2F";
+                passwordMatchMsg.style.display = "block";
+                passwordMatchMsg.className = "text-danger";
+                passwordMatchMsg.innerHTML = '<i class="fa-solid fa-times-circle"></i> Passwords do not match.';
+
+            } else {
+
+                confirmPassword.style.borderColor = "#2E7D32";
+                passwordMatchMsg.style.display = "block";
+                passwordMatchMsg.className = "text-success";
+                passwordMatchMsg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Passwords match.';
+
+            }
+
+        }
+
+        if (confirmPassword) {
+
+            confirmPassword.addEventListener("keyup", validatePassword);
+
+        }
+
+        if (newPassword) {
+
+            newPassword.addEventListener("keyup", validatePassword);
+
+        }
+
+        /*=========================================
+            PROFILE PHOTO PREVIEW
+        =========================================*/
+
+        const photoButton = document.getElementById("changePhotoBtn");
+
+        if (photoButton) {
+
+            photoButton.addEventListener("click", function () {
+
+                // Create a file input dynamically
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "image/*";
+
+                fileInput.addEventListener("change", function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const img = document.querySelector(".rounded-circle");
+                            img.src = event.target.result;
+                            showToast("Profile photo updated successfully.", "success");
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                fileInput.click();
+
+            });
+
+        }
+
+        /*=========================================
+            AI CONFIDENCE SLIDER
+        =========================================*/
+
+        const slider = document.getElementById("confidenceSlider");
+        const sliderValue = document.getElementById("sliderValue");
+
+        if (slider && sliderValue) {
+
+            slider.addEventListener("input", function () {
+
+                sliderValue.textContent = this.value + "%";
+
+            });
+
+        }
+
+        /*=========================================
+            NOTIFICATION SWITCHES
+        =========================================*/
+
+        document.querySelectorAll(".form-check-input")
+            .forEach(function (toggle) {
+
+                toggle.addEventListener("change", function () {
+
+                    const label = this.closest(".form-check").querySelector(".form-check-label");
+
+                    if (this.checked) {
+
+                        showToast(
+                            label.textContent.trim() + " Enabled",
+                            "success"
+                        );
+
+                    } else {
+
+                        showToast(
+                            label.textContent.trim() + " Disabled",
+                            "warning"
+                        );
+
+                    }
+
+                });
+
+            });
+
+        /*=========================================
+            CARD ANIMATION
+        =========================================*/
+
+        document.querySelectorAll(".card")
+            .forEach(function (card) {
+
+                card.classList.add("fade-up");
+
+            });
+
+        /*=========================================
+            BUTTON RIPPLE EFFECT
+        =========================================*/
+
+        document.querySelectorAll(".btn")
+            .forEach(function (button) {
+
+                button.addEventListener("click", function (e) {
+
+                    // Don't add ripple if button is disabled
+                    if (this.disabled) return;
+
+                    const ripple = document.createElement("span");
+
+                    ripple.className = "ripple";
+
+                    const rect = this.getBoundingClientRect();
+
+                    const size = Math.max(rect.width, rect.height);
+
+                    ripple.style.width = size + "px";
+                    ripple.style.height = size + "px";
+
+                    ripple.style.left =
+                        (e.clientX - rect.left - size / 2) + "px";
+
+                    ripple.style.top =
+                        (e.clientY - rect.top - size / 2) + "px";
+
+                    this.appendChild(ripple);
+
+                    setTimeout(function () {
+
+                        ripple.remove();
+
+                    }, 600);
+
+                });
+
+            });
+
+        /*=========================================
+            AUTO SAVE SIMULATION
+        =========================================*/
+
+        let timeout;
+
+        document.querySelectorAll("input,select")
+            .forEach(function (field) {
+
+                field.addEventListener("input", function () {
+
+                    clearTimeout(timeout);
+
+                    timeout = setTimeout(function () {
+
+                        console.log("Auto-saving settings...");
+
+                        // Show subtle auto-save indicator
+                        const saveBtn = document.getElementById("saveSettings");
+                        if (saveBtn) {
+                            saveBtn.innerHTML =
+                                '<i class="fa-solid fa-spinner fa-spin me-2"></i>Auto-saving...';
+                            setTimeout(function () {
+                                saveBtn.innerHTML =
+                                    '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+                            }, 1000);
+                        }
+
+                    }, 3000);
+
+                });
+
+            });
+
+        /*=========================================
+            SHOW TOAST
+        =========================================*/
+
+        function showToast(message, type) {
+
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement("div");
+            toast.className = "toast-notification " + type;
+
+            const icons = {
+                success: "fa-check-circle",
+                warning: "fa-exclamation-triangle",
+                info: "fa-info-circle",
+                danger: "fa-times-circle"
+            };
+
+            toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} me-2"></i> ${message}`;
+
+            document.body.appendChild(toast);
+
+            setTimeout(function () {
+
+                toast.style.transition = ".5s";
+                toast.style.opacity = "0";
+
+                setTimeout(function () {
+
+                    toast.remove();
+
+                }, 500);
+
+            }, 4000);
+
+        }
+
+        /*=========================================
+            KEYBOARD SHORTCUTS
+        =========================================*/
+
+        document.addEventListener("keydown", function (e) {
+
+            // Ctrl + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                e.preventDefault();
+                const saveBtn = document.getElementById("saveSettings");
+                if (saveBtn) saveBtn.click();
+            }
+
+        });
+
+    });
+</script>
+
+{% endblock %}

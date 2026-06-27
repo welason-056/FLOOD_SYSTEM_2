@@ -1,0 +1,1130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FloodGuard AI | Login</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- =========================================================
+           ALL LOGIN CSS EMBEDDED HERE
+    ========================================================= -->
+    <style>
+        /*=========================================================
+            FLOODGUARD AI LOGIN PAGE
+        =========================================================*/
+
+        :root{
+
+            --primary:#1565C0;
+            --primary-dark:#0D47A1;
+            --secondary:#42A5F5;
+            --light:#F5F9FF;
+            --white:#FFFFFF;
+            --dark:#1E293B;
+            --success:#2E7D32;
+            --danger:#D32F2F;
+            --shadow:0 15px 35px rgba(0,0,0,.15);
+            --radius:20px;
+
+        }
+
+        *{
+
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+
+        }
+
+        body{
+
+            font-family:'Poppins',sans-serif;
+
+            background:#eef4fb;
+
+            overflow:hidden;
+
+            opacity:0;
+            transition:opacity .7s;
+
+        }
+
+        body.loaded{
+            opacity:1;
+        }
+
+        /*=========================================================
+            MAIN LAYOUT
+        =========================================================*/
+
+        .login-wrapper{
+
+            display:flex;
+
+            width:100%;
+
+            height:100vh;
+
+        }
+
+        /*=========================================================
+            LEFT PANEL
+        =========================================================*/
+
+        .login-left{
+
+            width:55%;
+
+            position:relative;
+
+            display:flex;
+
+            align-items:center;
+
+            justify-content:center;
+
+            background:
+
+            linear-gradient(rgba(13,71,161,.85),
+
+            rgba(13,71,161,.85)),
+
+            url("{% static 'images/flood-bg.jpg' %}");
+
+            background-size:cover;
+
+            background-position:center;
+
+            background-attachment:fixed;
+
+        }
+
+        .overlay{
+
+            position:absolute;
+
+            top:0;
+
+            left:0;
+
+            width:100%;
+
+            height:100%;
+
+            background:rgba(0,0,0,.15);
+
+        }
+
+        .left-content{
+
+            position:relative;
+
+            z-index:2;
+
+            text-align:center;
+
+            color:#fff;
+
+            width:80%;
+
+        }
+
+        .logo{
+
+            margin-bottom:25px;
+
+        }
+
+        .logo i{
+
+            font-size:60px;
+
+            color:#4FC3F7;
+
+        }
+
+        .logo h2{
+
+            margin-top:15px;
+
+            font-weight:700;
+
+        }
+
+        .left-content h1{
+
+            font-size:42px;
+
+            font-weight:700;
+
+            margin-bottom:25px;
+
+            /* ====== SLIDE-UP GLOW ANIMATION ====== */
+            opacity:0;
+            animation: slideUpGlow 1.5s ease forwards;
+        }
+
+        .left-content p{
+
+            font-size:18px;
+
+            line-height:1.8;
+
+            color:#E3F2FD;
+
+            opacity:0;
+            animation: slideUpGlow 1.5s ease 0.3s forwards;
+
+        }
+
+        .hero-image{
+
+            margin-top:40px;
+
+            max-height:320px;
+
+            animation:floatImage 5s ease infinite;
+
+        }
+
+        @keyframes floatImage{
+
+            0%{
+
+                transform:translateY(0);
+
+            }
+
+            50%{
+
+                transform:translateY(-18px);
+
+            }
+
+            100%{
+
+                transform:translateY(0);
+
+            }
+
+        }
+
+        /* ====== SLIDE-UP GLOW ANIMATION ====== */
+        @keyframes slideUpGlow {
+            0% {
+                opacity: 0;
+                transform: translateY(60px);
+                filter: blur(10px);
+            }
+            60% {
+                filter: blur(2px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /*=========================================================
+            RIGHT PANEL
+        =========================================================*/
+
+        .login-right{
+
+            width:45%;
+
+            display:flex;
+
+            align-items:center;
+
+            justify-content:center;
+
+            background:#f8fbff;
+
+        }
+
+        .login-card{
+
+            width:90%;
+
+            max-width:480px;
+
+            background:#fff;
+
+            border-radius:25px;
+
+            padding:45px;
+
+            box-shadow:var(--shadow);
+
+            animation: slideUpGlow 1.5s ease 0.2s forwards;
+            opacity:0;
+
+        }
+
+        .login-card h2{
+
+            font-weight:700;
+
+            color:var(--primary);
+
+        }
+
+        .login-card p{
+
+            color:#777;
+
+        }
+
+        /*=========================================================
+            FORM
+        =========================================================*/
+
+        .form-label{
+
+            font-weight:600;
+
+        }
+
+        .input-group{
+
+            border-radius:12px;
+
+            overflow:hidden;
+
+        }
+
+        .input-group-text{
+
+            background:#1565C0;
+
+            color:#fff;
+
+            border:none;
+
+        }
+
+        .form-control{
+
+            border:1px solid #dbe6f5;
+
+            padding:14px;
+
+            box-shadow:none;
+
+        }
+
+        .form-control:focus{
+
+            border-color:#1565C0;
+
+            box-shadow:0 0 0 .2rem rgba(21,101,192,.15);
+
+        }
+
+        #togglePassword{
+
+            border:1px solid #dbe6f5;
+
+            background:#fff;
+
+        }
+
+        #togglePassword:hover{
+            background:#f0f4f8;
+        }
+
+        /*=========================================================
+            BUTTON
+        =========================================================*/
+
+        .btn-primary{
+
+            background:#1565C0;
+
+            border:none;
+
+            padding:14px;
+
+            border-radius:12px;
+
+            font-weight:600;
+
+            transition:.3s;
+
+        }
+
+        .btn-primary:hover{
+
+            background:#0D47A1;
+
+            transform:translateY(-3px);
+
+        }
+
+        .btn-primary:disabled{
+            opacity:0.7;
+            cursor:not-allowed;
+        }
+
+        /*=========================================================
+            LINKS
+        =========================================================*/
+
+        a{
+
+            text-decoration:none;
+
+            color:#1565C0;
+
+            font-weight:500;
+
+        }
+
+        a:hover{
+
+            color:#0D47A1;
+
+        }
+
+        /*=========================================================
+            ALERT
+        =========================================================*/
+
+        .alert{
+
+            border-radius:12px;
+
+            border:none;
+
+        }
+
+        /*=========================================================
+            CHECKBOX
+        =========================================================*/
+
+        .form-check-input:checked{
+
+            background:#1565C0;
+
+            border-color:#1565C0;
+
+        }
+
+        /*=========================================================
+            DIVIDER
+        =========================================================*/
+
+        hr{
+
+            margin:30px 0;
+
+        }
+
+        /*=========================================================
+            RIPPLE EFFECT
+        =========================================================*/
+
+        .btn{
+            position:relative;
+            overflow:hidden;
+        }
+
+        .ripple{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,.4);
+            transform:scale(0);
+            animation:rippleAnim .6s linear;
+            pointer-events:none;
+        }
+
+        @keyframes rippleAnim{
+            to{
+                transform:scale(4);
+                opacity:0;
+            }
+        }
+
+        /*=========================================================
+            TOAST NOTIFICATION
+        =========================================================*/
+
+        .toast-notification{
+            position:fixed;
+            top:20px;
+            right:20px;
+            z-index:9999;
+            min-width:300px;
+            border-radius:15px;
+            padding:18px 22px;
+            box-shadow:0 15px 35px rgba(0,0,0,.15);
+            animation:slideInRight .5s ease;
+            font-weight:500;
+        }
+
+        .toast-notification.success{
+            background:#E8F5E9;
+            color:#2E7D32;
+            border-left:5px solid #2E7D32;
+        }
+
+        .toast-notification.warning{
+            background:#FFF8E1;
+            color:#F57F17;
+            border-left:5px solid #F57F17;
+        }
+
+        .toast-notification.info{
+            background:#E3F2FD;
+            color:#1565C0;
+            border-left:5px solid #1565C0;
+        }
+
+        .toast-notification.danger{
+            background:#FFEBEE;
+            color:#C62828;
+            border-left:5px solid #C62828;
+        }
+
+        @keyframes slideInRight{
+            from{
+                opacity:0;
+                transform:translateX(100px);
+            }
+            to{
+                opacity:1;
+                transform:translateX(0);
+            }
+        }
+
+        /*=========================================================
+            RESPONSIVE
+        =========================================================*/
+
+        @media(max-width:1200px){
+
+            .left-content h1{
+
+                font-size:34px;
+
+            }
+
+        }
+
+        @media(max-width:992px){
+
+            .login-left{
+
+                display:none;
+
+            }
+
+            .login-right{
+
+                width:100%;
+
+                background:
+
+                linear-gradient(rgba(13,71,161,.85),
+
+                rgba(13,71,161,.85)),
+
+                url("{% static 'images/flood-bg.jpg' %}");
+
+                background-size:cover;
+
+                background-position:center;
+
+                background-attachment:fixed;
+
+            }
+
+            .login-card{
+
+                background:rgba(255,255,255,.97);
+
+                padding:40px;
+
+            }
+
+        }
+
+        @media(max-width:768px){
+
+            body{
+
+                overflow:auto;
+
+            }
+
+            .login-card{
+
+                width:95%;
+
+                padding:35px;
+
+            }
+
+            .login-card h2{
+                font-size:28px;
+            }
+
+        }
+
+        @media(max-width:576px){
+
+            .login-card{
+
+                padding:25px;
+
+            }
+
+            .login-card h2{
+
+                font-size:24px;
+
+            }
+
+            .btn{
+
+                width:100%;
+
+            }
+
+            .hero-image{
+                max-height:200px;
+            }
+
+            .left-content h1{
+                font-size:28px;
+            }
+
+        }
+
+        /* Input focus shadow */
+        .input-group:focus-within{
+            box-shadow:0 0 10px rgba(21,101,192,.25);
+        }
+
+        .input-group:focus-within .form-control{
+            border-color:#1565C0;
+        }
+
+        .input-group:focus-within .input-group-text{
+            border-color:#1565C0;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="login-wrapper">
+
+    <!-- ==========================================
+         LEFT SIDE
+    =========================================== -->
+
+    <div class="login-left">
+
+        <div class="overlay"></div>
+
+        <div class="left-content">
+
+            <div class="logo">
+
+                <i class="fa-solid fa-water"></i>
+
+                <h2>FloodGuard AI</h2>
+
+            </div>
+
+            <h1>
+
+                AI Enabled Early Flood Prediction &
+                Alert System
+
+            </h1>
+
+            <p>
+
+                Protecting Dar es Salaam Flood-Prone
+                Communities using Artificial Intelligence,
+                Machine Learning and Real-Time Monitoring.
+
+            </p>
+
+            <img src="{% static 'images/login-illustration.png' %}"
+                 class="img-fluid hero-image"
+                 alt="FloodGuard">
+
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         RIGHT SIDE
+    =========================================== -->
+
+    <div class="login-right">
+
+        <div class="login-card">
+
+            <div class="text-center mb-4">
+
+                <h2>
+
+                    Welcome Back
+
+                </h2>
+
+                <p>
+
+                    Login to continue
+
+                </p>
+
+            </div>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <!-- Username -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Username
+
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+
+                            <i class="fa-solid fa-user"></i>
+
+                        </span>
+
+                        <input
+
+                            type="text"
+
+                            name="username"
+
+                            class="form-control"
+
+                            placeholder="Enter username"
+
+                            required>
+
+                    </div>
+
+                </div>
+
+                <!-- Password -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Password
+
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </span>
+
+                        <input
+
+                            type="password"
+
+                            name="password"
+
+                            id="password"
+
+                            class="form-control"
+
+                            placeholder="Enter password"
+
+                            required>
+
+                        <button
+
+                            type="button"
+
+                            class="btn btn-outline-secondary"
+
+                            id="togglePassword">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- Remember -->
+
+                <div class="d-flex justify-content-between mb-4">
+
+                    <div>
+
+                        <input
+
+                            class="form-check-input"
+
+                            type="checkbox"
+
+                            id="remember">
+
+                        <label for="remember">
+
+                            Remember Me
+
+                        </label>
+
+                    </div>
+
+                    <a href="#">
+
+                        Forgot Password?
+
+                    </a>
+
+                </div>
+
+                <!-- Messages -->
+
+                {% if messages %}
+
+                    {% for message in messages %}
+
+                    <div class="alert alert-danger alert-dismissible fade show">
+
+                        {{ message }}
+
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+                <!-- Button -->
+
+                <div class="d-grid">
+
+                    <button
+
+                        class="btn btn-primary btn-lg"
+
+                        type="submit">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+
+                        Login
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            <hr>
+
+            <div class="text-center">
+
+                Don't have an account?
+
+                <a href="{% url 'register' %}">
+
+                    Register Here
+
+                </a>
+
+            </div>
+
+            <div class="text-center mt-4">
+
+                <a href="{% url 'home' %}"
+
+                   class="btn btn-outline-primary">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    Back Home
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+     BOOTSTRAP JS
+=========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<!-- ==========================================
+     ALL LOGIN JAVASCRIPT EMBEDDED HERE
+=========================================== -->
+
+<script>
+    /*=========================================================
+        FLOODGUARD AI LOGIN PAGE
+    =========================================================*/
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        /*=========================================
+            PAGE FADE-IN
+        =========================================*/
+
+        document.body.classList.add("loaded");
+
+        /*=========================================
+            PASSWORD SHOW / HIDE
+        =========================================*/
+
+        const togglePassword = document.getElementById("togglePassword");
+        const password = document.getElementById("password");
+
+        if (togglePassword && password) {
+
+            togglePassword.addEventListener("click", function() {
+
+                const type =
+                    password.getAttribute("type") === "password"
+                        ? "text"
+                        : "password";
+
+                password.setAttribute("type", type);
+
+                this.innerHTML =
+                    type === "password"
+                        ? '<i class="fa-solid fa-eye"></i>'
+                        : '<i class="fa-solid fa-eye-slash"></i>';
+
+            });
+
+        }
+
+        /*=========================================
+            LOGIN FORM VALIDATION
+        =========================================*/
+
+        const form = document.querySelector("form");
+
+        if (form) {
+
+            form.addEventListener("submit", function(e) {
+
+                const username =
+                    document.querySelector("input[name='username']").value.trim();
+
+                const passwordValue =
+                    document.querySelector("input[name='password']").value.trim();
+
+                if (username === "") {
+
+                    e.preventDefault();
+
+                    showToast("Please enter your username.", "warning");
+
+                    return;
+
+                }
+
+                if (passwordValue === "") {
+
+                    e.preventDefault();
+
+                    showToast("Please enter your password.", "warning");
+
+                    return;
+
+                }
+
+                /* Loading Button */
+
+                const btn = form.querySelector("button[type='submit']");
+
+                btn.disabled = true;
+
+                btn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+
+            });
+
+        }
+
+        /*=========================================
+            INPUT FOCUS EFFECT
+        =========================================*/
+
+        document.querySelectorAll(".form-control").forEach(function(input) {
+
+            input.addEventListener("focus", function() {
+
+                this.parentElement.style.boxShadow =
+                    "0 0 10px rgba(21,101,192,.25)";
+
+            });
+
+            input.addEventListener("blur", function() {
+
+                this.parentElement.style.boxShadow = "none";
+
+            });
+
+        });
+
+        /*=========================================
+            AUTO HIDE ALERTS
+        =========================================*/
+
+        const alerts = document.querySelectorAll(".alert");
+
+        alerts.forEach(function(alertBox) {
+
+            setTimeout(function() {
+
+                alertBox.style.transition = "0.5s";
+
+                alertBox.style.opacity = "0";
+
+                setTimeout(function() {
+
+                    alertBox.remove();
+
+                }, 500);
+
+            }, 5000);
+
+        });
+
+        /*=========================================
+            BUTTON RIPPLE EFFECT
+        =========================================*/
+
+        document.querySelectorAll(".btn").forEach(function(button) {
+
+            button.addEventListener("click", function(e) {
+
+                if (this.disabled) return;
+
+                const ripple = document.createElement("span");
+
+                const rect = this.getBoundingClientRect();
+
+                const size = Math.max(rect.width, rect.height);
+
+                ripple.style.width = ripple.style.height = size + "px";
+
+                ripple.style.left =
+                    e.clientX - rect.left - size / 2 + "px";
+
+                ripple.style.top =
+                    e.clientY - rect.top - size / 2 + "px";
+
+                ripple.className = "ripple";
+
+                this.appendChild(ripple);
+
+                setTimeout(function() {
+
+                    ripple.remove();
+
+                }, 600);
+
+            });
+
+        });
+
+        /*=========================================
+            TOAST NOTIFICATION
+        =========================================*/
+
+        function showToast(message, type) {
+
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement("div");
+
+            const types = {
+                success: "toast-notification success",
+                info: "toast-notification info",
+                danger: "toast-notification danger",
+                warning: "toast-notification warning"
+            };
+
+            toast.className = types[type] || types.info;
+
+            toast.innerHTML = message;
+
+            document.body.appendChild(toast);
+
+            setTimeout(function() {
+
+                toast.style.opacity = "0";
+
+                toast.style.transition = ".5s";
+
+                setTimeout(function() {
+
+                    toast.remove();
+
+                }, 500);
+
+            }, 4000);
+
+        }
+
+        /*=========================================
+            CONSOLE MESSAGE
+        =========================================*/
+
+        console.log(
+            "%cFloodGuard AI Login Loaded Successfully",
+            "color:#1565C0;font-size:16px;font-weight:bold;"
+        );
+
+    });
+</script>
+
+</body>
+
+</html>
