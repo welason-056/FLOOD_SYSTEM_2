@@ -3,85 +3,247 @@
 
 {% block title %}System Logs{% endblock %}
 
+{% block extra_css %}
+<style>
+    .btn-danger {
+        border-radius: 12px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+    }
+    .btn-danger:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        border-radius: 15px;
+        padding: 18px 22px;
+        box-shadow: 0 15px 35px rgba(0,0,0,.15);
+        animation: slideInRight .5s ease;
+        font-weight: 500;
+    }
+    .toast-notification.success {
+        background: #E8F5E9;
+        color: #2E7D32;
+        border-left: 5px solid #2E7D32;
+    }
+    .toast-notification.danger {
+        background: #FFEBEE;
+        color: #C62828;
+        border-left: 5px solid #C62828;
+    }
+    .toast-notification.warning {
+        background: #FFF8E1;
+        color: #F57F17;
+        border-left: 5px solid #F57F17;
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
 
-<h2>📝 System Logs</h2>
-<p>Monitor user activities, prediction logs, alert logs and system events.</p>
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h2>📝 System Logs</h2>
+        <p>Monitor user activities, prediction logs, alert logs and system events.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+        <button class="btn btn-danger" id="clearLogsBtn">
+            <i class="fa-solid fa-trash-can"></i> Clear All Logs
+        </button>
+    </div>
+</div>
 
 <div class="row g-4 mb-4">
-<div class="col-md-3">
-<div class="card">
-<div class="card-body text-center">
-<h3>{{ total_logs }}</h3>
-<p>Total Logs</p>
-</div>
-</div>
-</div>
-<div class="col-md-3">
-<div class="card">
-<div class="card-body text-center">
-<h3>{{ login_events }}</h3>
-<p>Login Events</p>
-</div>
-</div>
-</div>
-<div class="col-md-3">
-<div class="card">
-<div class="card-body text-center">
-<h3>{{ alert_events }}</h3>
-<p>Alert Events</p>
-</div>
-</div>
-</div>
-<div class="col-md-3">
-<div class="card">
-<div class="card-body text-center">
-<h3>{{ system_errors }}</h3>
-<p>System Errors</p>
-</div>
-</div>
-</div>
-</div>
-
-<div class="card">
-<div class="card-header">Activity Logs</div>
-<div class="card-body">
-<div class="table-responsive">
-<table class="table table-hover">
-<thead>
-<tr>
-<th>Date & Time</th>
-<th>User</th>
-<th>Activity</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-{% for log in logs %}
-<tr>
-<td>{{ log.created_at }}</td>
-<td><strong>{{ log.user }}</strong></td>
-<td>{{ log.activity }}</td>
-<td>
-<span class="badge bg-success">
-{{ log.status }}
-</span>
-</td>
-</tr>
-{% empty %}
-<tr>
-<td colspan="4" class="text-center text-muted py-4">
-<i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
-No logs available
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-</div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>{{ total_logs }}</h3>
+                <p>Total Logs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>{{ login_events }}</h3>
+                <p>Login Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>{{ alert_events }}</h3>
+                <p>Alert Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3>{{ system_errors }}</h3>
+                <p>System Errors</p>
+            </div>
+        </div>
+    </div>
 </div>
 
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-list-check me-2"></i> Activity Logs
+        <span class="badge bg-primary ms-2">{{ logs|length }}</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>User</th>
+                        <th>Activity</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_at }}</td>
+                        <td><strong>{{ log.user }}</strong></td>
+                        <td>{{ log.activity }}</td>
+                        <td>
+                            <span class="badge {% if log.status == 'Success' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fa-solid fa-inbox fa-2x d-block mb-2"></i>
+                            No logs available
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const clearBtn = document.getElementById('clearLogsBtn');
+
+    // ==========================================
+    // CSRF TOKEN HELPER
+    // ==========================================
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ==========================================
+    // TOAST SYSTEM
+    // ==========================================
+
+    function showToast(message, type) {
+        const existing = document.querySelector('.toast-notification');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        const icons = {
+            success: 'fa-check-circle',
+            warning: 'fa-exclamation-triangle',
+            danger: 'fa-times-circle'
+        };
+        const classes = {
+            success: 'toast-notification success',
+            warning: 'toast-notification warning',
+            danger: 'toast-notification danger'
+        };
+
+        toast.className = classes[type] || classes.info;
+        toast.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-info-circle'} me-2"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = '.5s';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
+    // ==========================================
+    // CLEAR ALL LOGS
+    // ==========================================
+
+    clearBtn.addEventListener('click', function() {
+        if (!confirm('⚠️ Are you sure you want to delete ALL system logs?\n\nThis action cannot be undone.')) {
+            return;
+        }
+
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+
+        fetch('/api/clear-logs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            this.disabled = false;
+            this.innerHTML = '<i class="fa-solid fa-trash-can"></i> Clear All Logs';
+
+            if (data.success) {
+                showToast(`✅ ${data.deleted_count} logs deleted successfully.`, 'success');
+                // Reload after a short delay
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('❌ Error: ' + (data.error || 'Failed to clear logs'), 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            this.disabled = false;
+            this.innerHTML = '<i class="fa-solid fa-trash-can"></i> Clear All Logs';
+            showToast('❌ Network error. Please try again.', 'danger');
+        });
+    });
+
+});
+</script>
 {% endblock %}

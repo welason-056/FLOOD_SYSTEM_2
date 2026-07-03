@@ -244,6 +244,23 @@
         text-decoration: underline;
     }
 
+    .toast-alert {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        border-radius: 15px;
+        padding: 18px;
+        box-shadow: 0 15px 35px rgba(0,0,0,.15);
+        animation: slideIn .5s ease;
+        color: #fff;
+    }
+    .toast-alert-success { background: #2E7D32; }
+    .toast-alert-danger { background: #D32F2F; }
+    .toast-alert-warning { background: #F9A825; color: #000; }
+    .toast-alert-info { background: #1565C0; }
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 {% endblock %}
 
@@ -261,10 +278,10 @@ Community Dashboard
 
     <div class="col-lg-8">
 
-        <h2 class="page-title">Community Dashboard – {{ community.name }}</h2>
+        <h2 class="page-title">Community Dashboard – <span id="communityNameDisplay">{{ community.name }}</span></h2>
 
         <p class="page-subtitle">
-            Real‑time flood risk for <strong>{{ community.name }}</strong> –
+            Real‑time flood risk for <strong id="communityNameStrong">{{ community.name }}</strong> –
             monitored by AI and updated daily.
         </p>
 
@@ -278,6 +295,10 @@ Community Dashboard
 
         <button class="btn btn-primary" id="predictNowBtn">
             <i class="fa-solid fa-brain"></i> Predict Now
+        </button>
+
+        <button class="btn btn-outline-primary" id="detectLocationBtn">
+            <i class="fa-solid fa-location-dot"></i> Detect Location
         </button>
 
     </div>
@@ -339,7 +360,7 @@ Community Dashboard
 
     </div>
 
-    <!-- DAILY TIMELINE CHART (7 days) -->
+    <!-- DAILY TIMELINE CHART (7 days) – ORIGINAL STYLE -->
     <div class="row mt-4">
 
         <div class="col-12">
@@ -435,7 +456,7 @@ Community Dashboard
             <div class="card">
 
                 <div class="card-header">
-                    <i class="fa-solid fa-house-chimney me-2"></i> {{ community.name }} Status
+                    <i class="fa-solid fa-house-chimney me-2"></i> <span id="statusCommunityName">{{ community.name }}</span> Status
                 </div>
 
                 <div class="card-body" id="communityStatusContainer">
@@ -459,7 +480,7 @@ Community Dashboard
     <div class="card">
         <div class="card-body empty-state">
             <i class="fa-solid fa-database"></i>
-            <h4>No Predictions for {{ community.name }}</h4>
+            <h4>No Predictions for <span id="emptyCommunityName">{{ community.name }}</span></h4>
             <p>
                 Generate a prediction for your community using the
                 <a href="{% url 'flood_prediction' %}">Flood Prediction</a> page
@@ -476,7 +497,8 @@ Community Dashboard
 {% endblock %}
 
 <!-- =========================================================
-       ALL DASHBOARD JAVASCRIPT – FILTERED TO COMMUNITY
+       ALL DASHBOARD JAVASCRIPT – WITH AUTO-LOCATION
+       ORIGINAL CHART (RISK PERCENTAGE OVER DATES) RETAINED
 ========================================================= -->
 {% block extra_js %}
 
@@ -486,7 +508,7 @@ Community Dashboard
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        console.log("Community Dashboard Loaded for {{ community.name }}");
+        console.log("Community Dashboard Loaded");
 
         // DOM refs
         const dashboardContent = document.getElementById('dashboardContent');
@@ -500,14 +522,124 @@ Community Dashboard
         const totalPredictions = document.getElementById('totalPredictions');
         const communityStatusContainer = document.getElementById('communityStatusContainer');
 
-        // The community name from Django context
-        const communityName = "{{ community.name }}";
+        // Initial community from Django context
+        let communityName = "{{ community.name }}";
+        let fallbackCommunity = communityName;  // keep the original for fallback
+
+        // Update community name display fields
+        const nameElements = [
+            document.getElementById('communityNameDisplay'),
+            document.getElementById('communityNameStrong'),
+            document.getElementById('statusCommunityName'),
+            document.getElementById('emptyCommunityName')
+        ];
+        function updateNameDisplay(name) {
+            nameElements.forEach(el => { if (el) el.textContent = name; });
+        }
+        updateNameDisplay(communityName);
 
         let allPredictions = [];
+        let isAutoDetectRunning = false;
 
         // Chart instances
         let timelineChart = null;
         let riskChart = null;
+
+        // ==========================================
+        // HELPER: GET CSRF TOKEN
+        // ==========================================
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ==========================================
+        // LOCATION DETECTION (manual or auto)
+        // ==========================================
+        function detectLocation(silent = false) {
+            if (!navigator.geolocation) {
+                if (!silent) showToast('Geolocation not supported.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('detectLocationBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Detecting...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    fetch('/api/nearest-community/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({lat: lat, lng: lng})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect Location';
+
+                        if (data.error) {
+                            if (!silent) showToast('Error: ' + data.error, 'danger');
+                            return;
+                        }
+
+                        if (data.name) {
+                            const newName = data.name;
+                            communityName = newName;
+                            updateNameDisplay(communityName);
+                            if (!silent) showToast('Location updated: ' + communityName, 'success');
+                            fetchPredictions().then(() => renderDashboard());
+                        } else {
+                            if (!silent) showToast('No communities found near you.', 'warning');
+                        }
+                    })
+                    .catch(err => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect Location';
+                        if (!silent) showToast('Network error. Please try again.', 'danger');
+                        console.error(err);
+                    });
+                },
+                function(error) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect Location';
+                    let message = 'Location access denied.';
+                    if (error.code === 1) message = 'Please allow location access in your browser.';
+                    else if (error.code === 2) message = 'Location unavailable.';
+                    else if (error.code === 3) message = 'Location request timed out.';
+                    if (!silent) showToast(message, 'warning');
+                    // Fallback to the profile community if detection fails
+                    if (communityName !== fallbackCommunity) {
+                        communityName = fallbackCommunity;
+                        updateNameDisplay(communityName);
+                        fetchPredictions().then(() => renderDashboard());
+                        if (!silent) showToast('Falling back to your assigned community: ' + communityName, 'info');
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        // Manual detect
+        document.getElementById('detectLocationBtn').addEventListener('click', function() {
+            detectLocation(false);
+        });
 
         /*=========================================
             FETCH DATA & FILTER BY COMMUNITY
@@ -554,6 +686,7 @@ Community Dashboard
 
         /*=========================================
             BUILD DAILY RISK DATA FROM PREDICTIONS
+            (Original version – percentages)
         =========================================*/
 
         function prepareDailyRiskData(predictions) {
@@ -695,13 +828,14 @@ Community Dashboard
                 communityStatusRow.style.display = 'none';
             }
 
-            // Render charts
+            // Render charts (original versions)
             renderTimelineChart();
             renderRiskDistribution();
         }
 
         /*=========================================
             RENDER 7‑DAY TIMELINE CHART
+            (Original – line chart with percentages)
         =========================================*/
 
         function renderTimelineChart() {
@@ -922,14 +1056,6 @@ Community Dashboard
                 warning: 'toast-alert-warning'
             };
             toast.className = 'toast-alert ' + (types[type] || types.info);
-            toast.style.cssText = `
-                position:fixed; right:20px; top:20px; z-index:9999;
-                min-width:300px; border-radius:15px; padding:18px;
-                box-shadow:0 15px 35px rgba(0,0,0,.15);
-                animation:slideIn .5s ease;
-                background:${type === 'success' ? '#2E7D32' : type === 'danger' ? '#D32F2F' : '#1565C0'};
-                color:white;
-            `;
             toast.innerHTML = message;
             document.body.appendChild(toast);
             setTimeout(() => {
@@ -962,9 +1088,61 @@ Community Dashboard
                 });
         }
 
-        /*=========================================
-            INIT
-        =========================================*/
+        // ==========================================
+        // AUTO-DETECT LOCATION ON PAGE LOAD (silent)
+        // ==========================================
+
+        function autoDetectLocation() {
+            if (isAutoDetectRunning) return;
+            isAutoDetectRunning = true;
+
+            if (!navigator.geolocation) {
+                console.log('Geolocation not supported, using assigned community.');
+                isAutoDetectRunning = false;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    fetch('/api/nearest-community/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({lat: lat, lng: lng})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        isAutoDetectRunning = false;
+                        if (data.name && data.name !== communityName) {
+                            communityName = data.name;
+                            updateNameDisplay(communityName);
+                            console.log('Auto-detected community:', communityName);
+                            fetchPredictions().then(() => renderDashboard());
+                        } else {
+                            console.log('Auto-detected community same as current or none.');
+                        }
+                    })
+                    .catch(err => {
+                        isAutoDetectRunning = false;
+                        console.warn('Auto-location fetch error:', err);
+                    });
+                },
+                function(error) {
+                    isAutoDetectRunning = false;
+                    console.log('Auto-location denied or failed, using assigned community.');
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+            );
+        }
+
+        // ==========================================
+        // INIT
+        // ==========================================
 
         // Attach event listeners
         document.getElementById('refreshDashboard').addEventListener('click', refreshDashboard);
@@ -972,13 +1150,15 @@ Community Dashboard
             btn.addEventListener('click', predictNow);
         });
 
-        // Load data
+        // First, load the initial data (using context community)
         fetchPredictions()
             .then(() => {
                 renderDashboard();
                 document.querySelectorAll('.card').forEach(card => {
                     card.classList.add('fade-up');
                 });
+                // Now try to auto-detect location and update if needed
+                autoDetectLocation();
             })
             .catch(err => console.error('Initial load failed:', err));
 
@@ -1003,7 +1183,7 @@ Community Dashboard
             alert(`You have ${count} active flood alerts for ${communityName}.`);
         });
 
-        console.log('Community Dashboard Ready for ' + communityName);
+        console.log('Community Dashboard Ready – auto-location enabled.');
     });
 </script>
 

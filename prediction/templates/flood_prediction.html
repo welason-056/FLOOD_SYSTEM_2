@@ -59,6 +59,24 @@
         from { opacity: 0; transform: translateX(100px); }
         to { opacity: 1; transform: translateX(0); }
     }
+
+    .location-btn {
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .location-btn:hover {
+        color: #1565C0;
+    }
+    .location-btn.loading {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    .location-error {
+        color: #D32F2F;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -67,7 +85,7 @@
     <div class="row mb-4">
         <div class="col-lg-12">
             <h2 class="page-title">Flood Prediction</h2>
-            <p class="page-subtitle">Generate a flood prediction for your assigned community.</p>
+            <p class="page-subtitle">Generate a flood prediction for your community.</p>
         </div>
     </div>
 
@@ -83,11 +101,25 @@
                         {% csrf_token %}
 
                         <div class="mb-3">
-                            <label class="form-label">My Community</label>
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ community.name }}"
-                                   readonly>
+                            <label class="form-label">Community</label>
+                            <div class="input-group">
+                                <input type="text"
+                                       class="form-control"
+                                       id="communityName"
+                                       value="{{ community.name }}"
+                                       readonly>
+                                <button class="btn btn-outline-primary" type="button" id="detectLocationBtn">
+                                    <i class="fa-solid fa-location-dot"></i> Detect My Location
+                                </button>
+                            </div>
+                            <div id="locationError" class="location-error">
+                                <i class="fa-solid fa-exclamation-circle"></i>
+                                <span id="locationErrorText">Location access denied or unavailable.</span>
+                            </div>
+                            <small class="text-muted">
+                                <i class="fa-solid fa-info-circle"></i>
+                                Your current community is shown above. Use the button to detect your current location.
+                            </small>
                         </div>
 
                         <div class="mb-3">
@@ -114,11 +146,18 @@
                     Your Community
                 </div>
                 <div class="card-body">
-                    <h4>{{ community.name }}</h4>
+                    <h4 id="communityDisplay">{{ community.name }}</h4>
                     <p class="text-muted">You are assigned to this community.</p>
                     <hr>
-                    <p><i class="fa-solid fa-map-pin me-2"></i> Lat: {{ community.latitude }}</p>
-                    <p><i class="fa-solid fa-map-pin me-2"></i> Lng: {{ community.longitude }}</p>
+                    <p><i class="fa-solid fa-map-pin me-2"></i> Lat: <span id="communityLat">{{ community.latitude }}</span></p>
+                    <p><i class="fa-solid fa-map-pin me-2"></i> Lng: <span id="communityLng">{{ community.longitude }}</span></p>
+                    <hr>
+                    <div id="locationStatus">
+                        <small class="text-muted" id="locationStatusText">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Location not detected. Use the "Detect My Location" button.
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -181,6 +220,148 @@ document.addEventListener("DOMContentLoaded", function() {
     const resultMessage = document.getElementById("resultMessage");
     const detailsContainer = document.getElementById("detailsContainer");
 
+    const detectBtn = document.getElementById("detectLocationBtn");
+    const communityName = document.getElementById("communityName");
+    const communityDisplay = document.getElementById("communityDisplay");
+    const communityLat = document.getElementById("communityLat");
+    const communityLng = document.getElementById("communityLng");
+    const locationStatusText = document.getElementById("locationStatusText");
+    const locationError = document.getElementById("locationError");
+    const locationErrorText = document.getElementById("locationErrorText");
+
+    let currentCommunity = "{{ community.name }}";
+    let currentLat = {{ community.latitude|default:'0' }};
+    let currentLng = {{ community.longitude|default:'0' }};
+
+    // ==========================================
+    // LOCATION DETECTION
+    // ==========================================
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function updateCommunity(community) {
+        currentCommunity = community.name;
+        currentLat = community.latitude;
+        currentLng = community.longitude;
+
+        communityName.value = community.name;
+        communityDisplay.textContent = community.name;
+        communityLat.textContent = community.latitude;
+        communityLng.textContent = community.longitude;
+
+        locationStatusText.innerHTML = `<i class="fa-solid fa-check-circle text-success"></i> Location detected: ${community.name}`;
+        locationError.style.display = 'none';
+
+        // Update the page URL with lat/lng for refresh persistence
+        const url = new URL(window.location.href);
+        url.searchParams.set('lat', community.latitude);
+        url.searchParams.set('lng', community.longitude);
+        window.history.replaceState({}, '', url);
+
+        showToast(`Location updated: ${community.name}`, 'success');
+    }
+
+    function detectLocation() {
+        if (!navigator.geolocation) {
+            locationErrorText.textContent = 'Geolocation is not supported by your browser.';
+            locationError.style.display = 'block';
+            showToast('Geolocation not supported.', 'warning');
+            return;
+        }
+
+        detectBtn.disabled = true;
+        detectBtn.classList.add('loading');
+        detectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Detecting...';
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // Find nearest community via API
+                fetch('/api/nearest-community/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({lat: lat, lng: lng})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    detectBtn.disabled = false;
+                    detectBtn.classList.remove('loading');
+                    detectBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect My Location';
+
+                    if (data.error) {
+                        locationErrorText.textContent = data.error;
+                        locationError.style.display = 'block';
+                        showToast('Error: ' + data.error, 'danger');
+                        return;
+                    }
+
+                    if (data.name) {
+                        updateCommunity(data);
+                    } else {
+                        locationErrorText.textContent = 'No communities found near you.';
+                        locationError.style.display = 'block';
+                        showToast('No community found near your location.', 'warning');
+                    }
+                })
+                .catch(err => {
+                    detectBtn.disabled = false;
+                    detectBtn.classList.remove('loading');
+                    detectBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect My Location';
+                    locationErrorText.textContent = 'Failed to connect to server. Please try again.';
+                    locationError.style.display = 'block';
+                    showToast('Network error. Please try again.', 'danger');
+                    console.error(err);
+                });
+            },
+            function(error) {
+                detectBtn.disabled = false;
+                detectBtn.classList.remove('loading');
+                detectBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Detect My Location';
+
+                let message = 'Location access denied.';
+                if (error.code === 1) {
+                    message = 'Location access denied. Please allow location access in your browser settings.';
+                } else if (error.code === 2) {
+                    message = 'Location unavailable. Please try again.';
+                } else if (error.code === 3) {
+                    message = 'Location request timed out. Please try again.';
+                }
+
+                locationErrorText.textContent = message;
+                locationError.style.display = 'block';
+                showToast(message, 'warning');
+                console.warn('Geolocation error:', error);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    }
+
+    // ==========================================
+    // PREDICTION
+    // ==========================================
+
     form.addEventListener("submit", function(e) {
         e.preventDefault();
 
@@ -202,10 +383,10 @@ document.addEventListener("DOMContentLoaded", function() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                "X-CSRFToken": getCookie('csrftoken')
             },
             body: JSON.stringify({
-                community: "{{ community.name }}",
+                community: currentCommunity,
                 date: date
             })
         })
@@ -310,6 +491,44 @@ document.addEventListener("DOMContentLoaded", function() {
             setTimeout(() => toast.remove(), 500);
         }, 4000);
     }
+
+    // ==========================================
+    // INIT – Auto‑detect on page load if lat/lng in URL
+    // ==========================================
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLat = urlParams.get('lat');
+    const urlLng = urlParams.get('lng');
+
+    if (urlLat && urlLng) {
+        // Already have location in URL – just update the displayed community
+        // But we need the community name – fetch it
+        fetch('/api/nearest-community/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({lat: parseFloat(urlLat), lng: parseFloat(urlLng)})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.name) {
+                updateCommunity(data);
+            }
+        })
+        .catch(err => console.error('Auto-location error:', err));
+    } else {
+        // Optionally auto-detect on load (uncomment if you want it)
+        // detectLocation();
+    }
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+
+    detectBtn.addEventListener('click', detectLocation);
+
 });
 </script>
 {% endblock %}

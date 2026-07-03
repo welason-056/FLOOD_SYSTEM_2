@@ -61,4 +61,6 @@ urlpatterns = [
     path('api/send-warning/', views.api_send_warning, name='api_send_warning'),
     path('api/resolve-alert/', views.api_resolve_alert, name='api_resolve_alert'),
     path('api/update-profile/', views.api_update_profile, name='api_update_profile'),
+    path('api/nearest-community/', views.api_nearest_community, name='api_nearest_community'),
+    path('api/clear-logs/', views.api_clear_logs, name='api_clear_logs'),
 ]

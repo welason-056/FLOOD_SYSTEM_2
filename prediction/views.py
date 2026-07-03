@@ -13,6 +13,7 @@ from .models import Community, DailyFloodRisk, Profile, SystemLog
 from .weather_fetcher import get_daily_weather
 from django.conf import settings
 from django.db.models import Q
+from math import radians, sin, cos, sqrt, atan2
 
 # ==================== LOGGING UTILITY ====================
 
@@ -26,6 +27,32 @@ def log_system_action(user, action, description, ip_address=None):
         description=description,
         ip_address=ip_address
     )
+
+# ==================== LOCATION UTILITY ====================
+
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great-circle distance between two points
+    on the Earth (specified in decimal degrees).
+    Returns distance in kilometers.
+    """
+    R = 6371  # Earth's radius in kilometers
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    return R * c
+
+def get_nearest_community(lat, lng):
+    """
+    Find the nearest community to the given coordinates.
+    Returns a Community object or None if no communities exist.
+    """
+    communities = Community.objects.all()
+    if not communities:
+        return None
+    nearest = min(communities, key=lambda c: haversine(lat, lng, c.latitude, c.longitude))
+    return nearest
 
 # ==================== BACKUP & RESTORE ====================
 
@@ -491,15 +518,37 @@ def disaster_manager_dashboard(request):
 
 @login_required
 def community_dashboard(request):
-    try:
-        profile = request.user.profile
-        community = profile.community
-    except (AttributeError, Profile.DoesNotExist):
-        messages.error(request, 'You are not assigned to any community. Please contact an administrator.')
-        return redirect('dashboard')
+    """
+    Community dashboard for regular users.
+    If lat/lng are provided in GET, find the nearest community.
+    Otherwise, fall back to the user's profile community.
+    """
+    # Check if location is provided in GET parameters
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    community = None
+
+    if lat and lng:
+        try:
+            lat = float(lat)
+            lng = float(lng)
+            community = get_nearest_community(lat, lng)
+        except (ValueError, TypeError):
+            pass
+
+    # Fall back to profile community
+    if not community:
+        try:
+            profile = request.user.profile
+            community = profile.community
+        except (AttributeError, Profile.DoesNotExist):
+            messages.error(request, 'You are not assigned to any community. Please contact an administrator.')
+            return redirect('dashboard')
+
     if not community:
         messages.error(request, 'You are not assigned to any community.')
         return redirect('dashboard')
+
     current_risk = get_today_risk(community) or 'No Data'
     active_alerts = DailyFloodRisk.objects.filter(
         community=community,
@@ -509,6 +558,7 @@ def community_dashboard(request):
     latest = DailyFloodRisk.objects.filter(community=community).order_by('-date').first()
     confidence = latest.confidence if latest else 0
     predictions = DailyFloodRisk.objects.filter(community=community).order_by('-date')[:5]
+
     context = {
         'community': community,
         'current_risk': current_risk,
@@ -521,14 +571,37 @@ def community_dashboard(request):
 
 @login_required
 def flood_prediction(request):
-    try:
-        community = request.user.profile.community
-    except (AttributeError, Profile.DoesNotExist):
-        messages.error(request, 'You are not assigned to any community.')
-        return redirect('dashboard')
+    """
+    Flood prediction page for community members.
+    If lat/lng are provided in GET, find the nearest community.
+    Otherwise, fall back to the user's profile community.
+    """
+    # Check if location is provided in GET parameters
+    lat = request.GET.get('lat')
+    lng = request.GET.get('lng')
+    community = None
+
+    if lat and lng:
+        try:
+            lat = float(lat)
+            lng = float(lng)
+            community = get_nearest_community(lat, lng)
+            if community:
+                messages.info(request, f'Detected your location near {community.name}.')
+        except (ValueError, TypeError):
+            pass
+
+    # Fall back to profile community
     if not community:
-        messages.error(request, 'You are not assigned to any community.')
+        try:
+            community = request.user.profile.community
+        except (AttributeError, Profile.DoesNotExist):
+            pass
+
+    if not community:
+        messages.error(request, 'Unable to determine your community. Please assign a community in your profile or allow location access.')
         return redirect('dashboard')
+
     context = {
         'community': community,
         'today': date.today(),
@@ -541,7 +614,7 @@ def my_alerts(request):
     try:
         community = request.user.profile.community
     except (AttributeError, Profile.DoesNotExist):
-        messages.error(request, 'You are not assigned to any community.')
+        messages.error(request, 'You are not assigned to any community. Please contact an administrator.')
         return redirect('dashboard')
     if not community:
         messages.error(request, 'You are not assigned to any community.')
@@ -814,6 +887,35 @@ def api_community_data(request):
     return JsonResponse({'communities': data})
 
 
+# ==================== NEAREST COMMUNITY API ====================
+
+def api_nearest_community(request):
+    """
+    Find the nearest community to the given coordinates.
+    Expects POST with JSON: {'lat': float, 'lng': float}
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body)
+        lat = data.get('lat')
+        lng = data.get('lng')
+        if lat is None or lng is None:
+            return JsonResponse({'error': 'Latitude and longitude required'}, status=400)
+        community = get_nearest_community(float(lat), float(lng))
+        if community:
+            return JsonResponse({
+                'id': community.id,
+                'name': community.name,
+                'latitude': community.latitude,
+                'longitude': community.longitude,
+            })
+        else:
+            return JsonResponse({'error': 'No communities found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 def api_today_weather(request):
     try:
         lat = -6.7924
@@ -869,4 +971,31 @@ def api_delete_prediction(request):
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error deleting prediction {pred_id}: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ==================== CLEAR ALL LOGS ====================
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser, login_url='dashboard')
+def api_clear_logs(request):
+    """
+    Delete all system logs (superuser only).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        deleted_count, _ = SystemLog.objects.all().delete()
+        log_system_action(
+            request.user,
+            'SYSTEM_ACTION',
+            f"All system logs cleared by {request.user.username}",
+            request.META.get('REMOTE_ADDR')
+        )
+        return JsonResponse({
+            'success': True,
+            'deleted_count': deleted_count,
+            'message': f'{deleted_count} logs deleted successfully.'
+        })
+    except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
